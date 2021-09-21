@@ -7,6 +7,16 @@
 
 static constexpr ImU32 IM_FORCED_COLOR = IM_COL32(255, 130, 40, 255);
 
+typedef int ImGuiTextClippedFlags;               // -> enum ImGuiTextClippedFlags_     // Flags: for TextClipped()
+
+// Flags for TextClipped()
+enum ImGuiTextClippedFlags_
+{
+    ImGuiTextClippedFlags_None = 0,
+    ImGuiTextClippedFlags_Center = 1 << 0,      // Center text if shorter than max_width
+    ImGuiTextClippedFlags_UseTooltip = 1 << 1,  // Show tooltip with whole text if clipped
+};
+
 namespace ImGui
 {
 
@@ -98,6 +108,7 @@ struct TreeViewClipper {
 IMGUI_API void PushDragDropStyle();
 IMGUI_API void PopDragDropStyle();
 
+IMGUI_API void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags);
 IMGUI_API bool TextFilter(const char* hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
 
 IMGUI_API bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
