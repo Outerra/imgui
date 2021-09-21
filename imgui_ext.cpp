@@ -23,7 +23,42 @@ void PopDragDropStyle()
 
 
 
-bool TextFilter(const char* hint, char* buf, size_t buf_size, float width) {
+void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags)
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    const ImGuiStyle& style = ImGui::GetStyle();
+    ImVec2 textSize = ImGui::CalcTextSize(text);
+    ImRect textRect;
+    textRect.Min = ImGui::GetCursorScreenPos();
+    textRect.Max = textRect.Min;
+    textRect.Max.x += max_width - style.ItemSpacing.x;
+    textRect.Max.y += textSize.y;
+
+    if (flags & ImGuiTextClippedFlags_Center && max_width > textSize.x) {
+        float half = (max_width - textSize.x) * 0.5f;
+        textRect.Min.x += half;
+    }
+
+    ImGui::SetCursorScreenPos(textRect.Min);
+
+    ImGui::AlignTextToFramePadding();
+    textRect.Min.y += window->DC.CurrLineTextBaseOffset;
+    textRect.Max.y += window->DC.CurrLineTextBaseOffset;
+
+    ImGui::ItemSize(textRect);
+    if (ImGui::ItemAdd(textRect, window->GetID(text)))
+    {
+        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
+            textRect.Max.x, text, nullptr, &textSize);
+
+        if (flags & ImGuiTextClippedFlags_UseTooltip && textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
+            ImGui::SetTooltip("%s", text);
+    }
+    ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
+}
+
+bool TextFilter(const char* hint, char* buf, size_t buf_size, float width)
+{
     ImGui::PushID(hint);
     ImGui::PushItemWidth(width);
     bool result = ImGui::InputTextWithHint("##filter", hint, buf, buf_size);
@@ -44,7 +79,8 @@ bool TextFilter(const char* hint, char* buf, size_t buf_size, float width) {
 
 
 template <auto fn, class ...Args>
-bool core_gui(bool& forced, const char* label, Args ...args) {
+bool core_gui(bool& forced, const char* label, Args ...args)
+{
     bool result = false;
     const bool f = forced;
     if (f) {
