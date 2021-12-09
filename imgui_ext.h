@@ -20,6 +20,10 @@ enum ImGuiTextClippedFlags_
 namespace ImGui
 {
 
+// only handles coplexity on top level, if you have a node with 1M children, you are out of luck
+// changes in clipped parts are not detected, so if somebody deleted nodes in clipped, scrollbar is not updated until user actually scrolls
+// scrolling and changes refresh the clipper == that part is as slow as no clipping at all
+// only single list in BeginChild/EndChild is tested
 struct TreeViewClipper {
     // persist
     float cursor_end = 0;
@@ -41,6 +45,7 @@ struct TreeViewClipper {
 
     // returns index of first visible top-level node
     uint Begin(uint _count) {
+        if (_count != count) full_pass = true;
         count = _count;
         scrolled = ImGui::GetScrollY() != last_scroll;
         if (scrolled) full_pass = true;
@@ -54,7 +59,7 @@ struct TreeViewClipper {
         last_is_visible = true;
         idx = first_visible_index;
         finished = idx >= count;
-                        
+
         return idx;
     }
 
@@ -134,3 +139,18 @@ IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 IMGUI_API void LabelEx(const char* label);
 
 }
+
+struct ImGuiTextureExt
+{
+    unsigned int env = 0;
+    unsigned int id = 0;
+
+    ImGuiTextureExt() {}
+
+    ImGuiTextureExt(ImTextureID imTexId) {
+        env = (unsigned int)(intptr_t(imTexId) >> 32u);
+        id = (unsigned int)(intptr_t(imTexId) & 0xFFFFffffu);
+    }
+
+    ImTextureID getImTexID() { return (ImTextureID)(intptr_t(env) << 32u | intptr_t(id)); }
+};
