@@ -6146,6 +6146,8 @@ void ImGui::NewFrame()
     g.PlatformImeDataPrev = g.PlatformImeData;
     g.PlatformImeData.WantVisible = g.PlatformImeData.WantTextInput = false;
 
+    g.PrevWindowFocused = false;
+
     // Mouse wheel scrolling, scale
     UpdateMouseWheel();
 
@@ -9072,6 +9074,9 @@ void ImGui::End()
         if (ImGuiWindow* host_window = window->DockNode->HostWindow)         // FIXME-DOCK
             host_window->DC.CursorMaxPos = window->DC.CursorMaxPos + window->WindowPadding - host_window->WindowPadding;
 
+    if (IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+        g.PrevWindowFocused = true;
+
     // Pop from window stack
     g.LastItemData = window_stack_data.ParentLastItemDataBackup;
     if (window->Flags & ImGuiWindowFlags_ChildMenu)
@@ -9470,6 +9475,14 @@ void ImGui::SetWindowCollapsed(ImStrv name, bool collapsed, ImGuiCond cond)
 {
     if (ImGuiWindow* window = FindWindowByName(name))
         SetWindowCollapsed(window, collapsed, cond);
+}
+
+bool ImGui::ClearWindowFocusedFlag()
+{
+    ImGuiContext& g = *GImGui;
+    bool was = g.PrevWindowFocused;
+    g.PrevWindowFocused = false;
+    return was;
 }
 
 void ImGui::SetNextWindowPos(const ImVec2& pos, ImGuiCond cond, const ImVec2& pivot)

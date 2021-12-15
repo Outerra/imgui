@@ -2569,6 +2569,7 @@ struct ImGuiContext
     float                   WheelingWindowReleaseTimer;
     ImVec2                  WheelingWindowWheelRemainder;
     ImVec2                  WheelingAxisAvg;
+    bool                    PrevWindowFocused;                  //< Some previous window had focus between calls to WasWindowFocused
 
     // Item/widgets state and tracking information
     const char*             MixedValueLabel;                    // Value replacement when displaying a mixed value. Default to "-" (Unreal uses "Multiple values", Unity uses "---"). May be interpreted as a format: must not contain single %. Set to NULL to display original value.
