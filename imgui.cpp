@@ -4194,6 +4194,8 @@ void ImGui::NewFrame()
     g.PlatformImePos = ImVec2(1.0f, 1.0f); // OS Input Method Editor showing on top-left of our window by default
     g.PlatformImePosViewport = NULL;
 
+    g.PrevWindowFocused = false;
+
     // Mouse wheel scrolling, scale
     UpdateMouseWheel();
 
@@ -6933,6 +6935,9 @@ void ImGui::End()
         if (ImGuiWindow* host_window = window->DockNode->HostWindow)         // FIXME-DOCK
             host_window->DC.CursorMaxPos = window->DC.CursorMaxPos + window->WindowPadding - host_window->WindowPadding;
 
+    if (IsWindowFocused(ImGuiFocusedFlags_ChildWindows))
+        g.PrevWindowFocused = true;
+
     // Pop from window stack
     g.CurrentWindowStack.pop_back();
     if (window->Flags & ImGuiWindowFlags_Popup)
@@ -7451,6 +7456,14 @@ void ImGui::SetWindowFocus(const char* name)
     {
         FocusWindow(NULL);
     }
+}
+
+bool ImGui::ClearWindowFocusedFlag()
+{
+    ImGuiContext& g = *GImGui;
+    bool was = g.PrevWindowFocused;
+    g.PrevWindowFocused = false;
+    return was;
 }
 
 void ImGui::SetNextWindowPos(const ImVec2& pos, ImGuiCond cond, const ImVec2& pivot)

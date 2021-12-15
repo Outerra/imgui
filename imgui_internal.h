@@ -1600,6 +1600,7 @@ struct ImGuiContext
     ImGuiWindow*            WheelingWindow;                     // Track the window we started mouse-wheeling on. Until a timer elapse or mouse has moved, generally keep scrolling the same window even if during the course of scrolling the mouse ends up hovering a child window.
     ImVec2                  WheelingWindowRefMousePos;
     float                   WheelingWindowTimer;
+    bool                    PrevWindowFocused;                  //< Some previous window had focus between calls to WasWindowFocused
 
     // Item/widgets state and tracking information
     ImGuiItemFlags          CurrentItemFlags;                   // == g.ItemFlagsStack.back()
@@ -1847,6 +1848,7 @@ struct ImGuiContext
         MovingWindow = NULL;
         WheelingWindow = NULL;
         WheelingWindowTimer = 0.0f;
+        PrevWindowFocused = false;
 
         CurrentItemFlags = ImGuiItemFlags_None;
         HoveredId = HoveredIdPreviousFrame = 0;

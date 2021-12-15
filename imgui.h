@@ -371,6 +371,7 @@ namespace ImGui
     IMGUI_API void          SetWindowSize(const char* name, const ImVec2& size, ImGuiCond cond = 0);    // set named window size. set axis to 0.0f to force an auto-fit on this axis.
     IMGUI_API void          SetWindowCollapsed(const char* name, bool collapsed, ImGuiCond cond = 0);   // set named window collapsed state
     IMGUI_API void          SetWindowFocus(const char* name);                                           // set named window to be focused / top-most. use NULL to remove focus.
+    IMGUI_API bool          ClearWindowFocusedFlag();                                                   // returns true if any window was focused since the last call to this function or to NewFrame
 
     // Content region
     // - Retrieve available space from a given point. GetContentRegionAvail() is frequently useful.
