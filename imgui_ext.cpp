@@ -181,6 +181,11 @@ bool Combo(const char* label, uint8* current_item, const char* items_separated_b
 
 bool CheckBoxTristate(const char* label, int* v_tristate)
 {
+    const ImGuiStyle& style = ImGui::GetStyle();
+    float max_width = ImGui::CalcItemWidth();
+    float width = ImGui::GetFrameHeight() + style.FramePadding.y * 2.0f;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (max_width - width) * 0.5f);
+
     bool ret;
     if (*v_tristate == -1)
     {
@@ -234,6 +239,62 @@ void LabelEx(const char* label)
     ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
     ImGui::SameLine();
     ImGui::SetNextItemWidth(itemWidth);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void DockWindow(const char* window_name, ImGuiID node_id)
+{
+    ImGui::DockBuilderDockWindow(window_name, node_id);
+}
+
+bool IsWindowDocked(const char* window_name)
+{
+    ImGuiID window_id = ImHashStr(window_name);
+    ImGuiWindow* window = ImGui::FindWindowByID(window_id);
+    if (window == nullptr)
+        return false;
+
+    return window->DockIsActive;
+}
+
+ImGuiID GetWindowDockID(const char* window_name)
+{
+    ImGuiID window_id = ImHashStr(window_name);
+    ImGuiWindow* window = ImGui::FindWindowByID(window_id);
+    if (window == nullptr)
+        return 0;
+
+    ImGuiDockNode* node = window->DockNode;
+    if (node == nullptr)
+        return 0;
+
+    return node->ID;
+}
+
+ImGuiID AddDockNode(ImGuiID node_id, ImGuiDockNodeFlags flags)
+{
+    return ImGui::DockBuilderAddNode(node_id, flags);
+}
+
+void SetDockNodePos(ImGuiID node_id, ImVec2 pos)
+{
+    ImGui::DockBuilderSetNodePos(node_id, pos);
+}
+
+void SetDockNodeSize(ImGuiID node_id, ImVec2 size)
+{
+    ImGui::DockBuilderSetNodeSize(node_id, size);
+}
+
+ImGuiID SplitDockNode(ImGuiID node_id, ImGuiDir split_dir, float size_ratio_for_node_at_dir, ImGuiID* out_id_at_dir, ImGuiID* out_id_at_opposite_dir)
+{
+    return ImGui::DockBuilderSplitNode(node_id, split_dir, size_ratio_for_node_at_dir, out_id_at_dir, out_id_at_opposite_dir);
+}
+
+void DockChangesFinish(ImGuiID node_id)
+{
+    ImGui::DockBuilderFinish(node_id);
 }
 
 }
