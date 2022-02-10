@@ -136,8 +136,6 @@ IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, co
 IMGUI_API bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
 IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 
-IMGUI_API void LabelEx(const char* label);
-
 ///////////////////////////////////////////////////////////////////////////////
 
 IMGUI_API void             DockWindow(const char* window_name, ImGuiID node_id);
@@ -161,6 +159,8 @@ IMGUI_API void             DockChangesFinish(ImGuiID node_id);
 
 namespace ImGuiEx
 {
+
+IMGUI_API void Label(const char* label);
 
 IMGUI_API bool Checkbox(const char* label, bool* v);
 
