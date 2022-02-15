@@ -709,6 +709,93 @@ bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags, co
 }
 
 
+bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::SliderFloatForced("##SliderFloatForced", forced, v, v_min, v_max, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputFloatForced(const char* label, bool& forced, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputFloatForced("##InputFloatForced", forced, v, step, step_fast, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputIntForced(const char* label, bool& forced, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputIntForced("##InputIntForced", forced, v, step, step_fast, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step, int64 step_fast, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputInt64Forced("##InputInt64Forced", forced, v, step, step_fast, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::DragFloatForced("##DragFloatForced", forced, v, v_speed, v_min, v_max, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::DragFloat2Forced("##DragFloat2Forced", forced, v, v_speed, v_min, v_max, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::DragFloat3Forced("##DragFloat3Forced", forced, v, v_speed, v_min, v_max, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::DragFloat4Forced("##DragFloat4Forced", forced, v, v_speed, v_min, v_max, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool CheckboxForced(const char* label, bool& forced, bool* v)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    float max_width = ImGui::CalcItemWidth();
+    float width = ImGui::GetFrameHeight() + style.FramePadding.y * 2.0f;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (max_width - width) * 0.5f);
+
+    bool result = ImGui::CheckboxForced("##CheckboxForced", forced, v);
+    ImGui::PopID();
+    return result;
+}
+
 bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);

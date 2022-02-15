@@ -113,6 +113,14 @@ struct TreeViewClipper {
 IMGUI_API void PushDragDropStyle();
 IMGUI_API void PopDragDropStyle();
 
+IMGUI_API void PushDisable();
+IMGUI_API void PopDisable();
+
+IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
+
+
 IMGUI_API void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags);
 IMGUI_API bool TextFilter(const char* hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
 
@@ -128,13 +136,6 @@ IMGUI_API bool DragFloat3Forced(const char* label, bool& forced, float v[3], flo
 IMGUI_API bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
 IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
-
-IMGUI_API void PushDisable();
-IMGUI_API void PopDisable();
-
-IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
-IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -213,6 +214,19 @@ IMGUI_API bool ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags
 IMGUI_API bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 
 // custom ones
+IMGUI_API bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool InputFloatForced(const char* label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+
+IMGUI_API bool InputIntForced(const char* label, bool& forced, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step = 1, int64 step_fast = 100, ImGuiInputTextFlags flags = 0);
+
+IMGUI_API bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+
+IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
+
 IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
 IMGUI_API void EndCombo();
