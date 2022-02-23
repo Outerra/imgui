@@ -6,6 +6,7 @@
 #undef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 static constexpr ImU32 IM_FORCED_COLOR = IM_COL32(255, 130, 40, 255);
+static constexpr ImU32 IM_ERROR_COLOR = IM_COL32(255, 130, 120, 255);
 
 typedef int ImGuiTextClippedFlags;               // -> enum ImGuiTextClippedFlags_     // Flags: for TextClipped()
 
