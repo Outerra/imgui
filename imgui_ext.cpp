@@ -1,6 +1,7 @@
 #include "imgui_ext.h"
 
 #include <utility>
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
 
@@ -818,7 +819,7 @@ void EndCombo()
     ImGui::EndCombo();
 }
 
-bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
+bool Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -834,6 +835,69 @@ bool CheckBoxTristate(const char* label, int* v_tristate)
     bool result = ImGui::CheckBoxTristate("##CheckBoxTristate", v_tristate);
     ImGui::PopID();
     return result;
+}
+
+bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros)
+{
+    int items_count = 0;
+    const char* p = items_separated_by_zeros;
+    while (*p) {
+        p += strlen(p) + 1;
+        items_count++;
+    }
+    p = items_separated_by_zeros;
+
+    ImGuiEx::Label(label);
+
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
+    const ImVec2 size(ImGui::GetContentRegionAvail().x, g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
+
+    ImVec2 pos = window->DC.CursorPos;
+
+    const ImRect bb(pos, pos + size);
+    ImGui::ItemSize(size, style.FramePadding.y);
+    if (!ImGui::ItemAdd(bb, id))
+        return false;
+
+    bool hovered, held;
+    bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+
+    // Render
+    //const ImU32 col = ImGui::GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+    const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
+    ImGui::RenderNavHighlight(bb, id);
+    ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
+
+    for (int i = 0; i < items_count; ++i) {
+        const bool item_selected = (i == *current_item);
+        const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
+
+        if (label_bb.Contains(g.IO.MousePos) && pressed) {
+            *current_item = i;
+        }
+
+        if (label_bb.Contains(g.IO.MousePos) || item_selected) {
+            const ImU32 label_col = ImGui::GetColorU32(((held && hovered) || item_selected) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+            ImGui::RenderFrame(label_bb.Min, label_bb.Max, label_col, false, style.FrameRounding);
+        }
+
+        if (g.LogEnabled)
+            ImGui::LogSetNextTextDecoration("[", "]");
+
+        const ImVec2 label_text_size = ImGui::CalcTextSize(p, NULL, true);
+        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, p, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
+        p += strlen(p) + 1;
+    }
+
+    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+    return pressed;
 }
 
 }
