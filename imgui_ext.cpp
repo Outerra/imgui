@@ -883,8 +883,11 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
             *current_item = i;
         }
 
-        if (label_bb.Contains(g.IO.MousePos) || item_selected) {
-            const ImU32 label_col = ImGui::GetColorU32(((held && hovered) || item_selected) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+        bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
+        bool lheld = held && lhovered;
+        if (lhovered || item_selected) {
+            bool lactive = (lheld && lhovered) || (item_selected && !lhovered);
+            const ImU32 label_col = ImGui::GetColorU32(lactive ? ImGuiCol_ButtonActive : lhovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
             ImGui::RenderFrame(label_bb.Min, label_bb.Max, label_col, false, style.FrameRounding);
         }
 
