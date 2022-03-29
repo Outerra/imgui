@@ -870,7 +870,6 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
 
     // Render
-    //const ImU32 col = ImGui::GetColorU32((held && hovered) ? ImGuiCol_ButtonActive : hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
     const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
     ImGui::RenderNavHighlight(bb, id);
     ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
