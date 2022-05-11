@@ -117,7 +117,33 @@ IMGUI_API void PopDragDropStyle();
 IMGUI_API void PushDisable();
 IMGUI_API void PopDisable();
 
-IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+template<typename T>
+inline bool SliderScalarT(const char* label, T& p_data, const T p_min, const T p_max, const char* format = NULL, ImGuiSliderFlags flags = 0) {
+    if constexpr (std::is_same_v<T, int8>)
+        return ImGui::SliderScalar(label, ImGuiDataType_S8, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, uint8>)
+        return ImGui::SliderScalar(label, ImGuiDataType_U8, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, int16>)
+        return ImGui::SliderScalar(label, ImGuiDataType_S16, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, uint16>)
+        return ImGui::SliderScalar(label, ImGuiDataType_U16, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, int32>)
+        return ImGui::SliderScalar(label, ImGuiDataType_S32, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, uint32>)
+        return ImGui::SliderScalar(label, ImGuiDataType_U32, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, int64>)
+        return ImGui::SliderScalar(label, ImGuiDataType_S64, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v < T, uint64>)
+        return ImGui::SliderScalar(label, ImGuiDataType_U64, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v<T, float>)
+        return ImGui::SliderScalar(label, ImGuiDataType_Float, &p_data, &p_min, &p_max, format, flags);
+    else if constexpr (std::is_same_v<T, double>)
+        return ImGui::SliderScalar(label, ImGuiDataType_Double, &p_data, &p_min, &p_max, format, flags);
+    else {
+        static_assert(!std::is_same_v<T, void>, "Unknown type");
+        return false;
+    }
+}
 IMGUI_API bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
 IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 

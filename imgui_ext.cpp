@@ -170,6 +170,16 @@ bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* 
     return ImGui::SliderScalar(label, ImGuiDataType_U32, v, &v_min, &v_max, format, flags);
 }
 
+bool SliderInt16(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
+{
+    return ImGui::SliderScalar(label, ImGuiDataType_S16, v, &v_min, &v_max, format, flags);
+}
+
+bool SliderUInt16(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
+{
+    return ImGui::SliderScalar(label, ImGuiDataType_U16, v, &v_min, &v_max, format, flags);
+}
+
 bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
 {
     int current = *current_item;
@@ -272,11 +282,13 @@ namespace ImGuiEx
 void Label(const char* label)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
-    //const ImVec2 lineStart = ImGui::GetCursorScreenPos();
+
+    ImVec2 textSize = ImGui::CalcTextSize(label, 0, true);
+    if (textSize.x == 0.0f) return;
+
     const ImGuiStyle& style = ImGui::GetStyle();
     float fullWidth = ImGui::GetContentRegionAvail().x;
     float itemWidth = fullWidth * 0.65f;
-    ImVec2 textSize = ImGui::CalcTextSize(label);
     ImRect textRect;
     textRect.Min = ImGui::GetCursorScreenPos();
     textRect.Max = textRect.Min;
