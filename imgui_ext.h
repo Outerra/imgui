@@ -183,6 +183,30 @@ IMGUI_API ImGuiID          SplitDockNode(ImGuiID node_id, ImGuiDir split_dir, fl
 //IMGUI_API void           DockBuilderCopyWindowSettings(const char* src_name, const char* dst_name);
 IMGUI_API void             DockChangesFinish(ImGuiID node_id);
 
+
+// ClearAllFn - Clear all settings data
+// ReadInitFn - Read : Called before reading(in registration order)
+// ReadOpenFn - Read : Called when entering into a new ini entry e.g. "[Window][Name]"
+// ReadLineFn - Read : Called for every line of text within an ini entry
+// ApplyAllFn - Read : Called after reading(in registration order)
+// WriteAllFn - Write : Output every entries into 'out_buf'
+// void  (*ClearAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+// void  (*ReadInitFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+// void* (*ReadOpenFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler, const char* name);
+// void  (*ReadLineFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler, void* entry, const char* line);
+// void  (*ApplyAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
+// void  (*WriteAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* out_buf);
+IMGUI_API void RegisterSettingsHandler(
+    ImGuiContext* context,
+    const char* name,
+    void* ClearAllFn,
+    void* ReadInitFn,
+    void* ReadOpenFn,
+    void* ReadLineFn,
+    void* ApplyAllFn,
+    void* WriteAllFn
+);
+
 }
 
 namespace ImGuiEx
