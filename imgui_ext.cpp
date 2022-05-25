@@ -273,6 +273,30 @@ void DockChangesFinish(ImGuiID node_id)
     ImGui::DockBuilderFinish(node_id);
 }
 
+IMGUI_API void RegisterSettingsHandler(ImGuiContext* context, const char* name, void* ClearAllFn, void* ReadInitFn, void* ReadOpenFn, void* ReadLineFn, void* ApplyAllFn, void* WriteAllFn)
+{
+    using ClearAllFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
+    using ReadInitFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
+    using ReadOpenFnPtr = void*(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler, const char* name);
+    using ReadLineFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler, void* entry, const char* line);
+    using ApplyAllFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
+    using WriteAllFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler, ImGuiTextBuffer * out_buf);
+
+    ImGuiSettingsHandler new_handler;
+    new_handler.TypeName = name;
+    new_handler.TypeHash = ImHashStr(name);
+    new_handler.ClearAllFn = reinterpret_cast<ClearAllFnPtr>(ClearAllFn);
+    new_handler.ReadInitFn = reinterpret_cast<ReadInitFnPtr>(ReadInitFn);
+    new_handler.ReadOpenFn = reinterpret_cast<ReadOpenFnPtr>(ReadOpenFn);
+    new_handler.ReadLineFn = reinterpret_cast<ReadLineFnPtr>(ReadLineFn);
+    new_handler.ApplyAllFn = reinterpret_cast<ApplyAllFnPtr>(ApplyAllFn);
+    new_handler.WriteAllFn = reinterpret_cast<WriteAllFnPtr>(WriteAllFn);
+
+    context->SettingsHandlers.push_back(new_handler);
+}
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 }
 
 
