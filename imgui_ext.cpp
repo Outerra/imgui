@@ -938,4 +938,87 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     return pressed;
 }
 
+bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags)
+{
+    int items_count = 0;
+    const char* p = items_separated_by_zeros;
+    while (*p) {
+        p += strlen(p) + 1;
+        items_count++;
+    }
+    p = items_separated_by_zeros;
+
+    ImGuiEx::Label(label);
+
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    const bool is_readonly = (flags & ImGuiInputBitfieldFlags_ReadOnly) != 0;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
+    const ImVec2 size(ImGui::GetContentRegionAvail().x, g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
+
+    ImVec2 pos = window->DC.CursorPos;
+
+    const ImRect bb(pos, pos + size);
+    ImGui::ItemSize(size, style.FramePadding.y);
+    if (!ImGui::ItemAdd(bb, id))
+        return false;
+
+    bool hovered = false, held = false;
+    bool pressed = !is_readonly && ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+
+    // Render
+    const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
+    ImGui::RenderNavHighlight(bb, id);
+    ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
+
+    for (int i = 0; i < items_count; ++i) {
+        const bool item_selected = (*bits & (1u << i));
+        const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
+
+        if (label_bb.Contains(g.IO.MousePos) && pressed) {
+            *bits ^= (1u << i);
+        }
+
+        bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
+        bool lheld = held && lhovered;
+        if (lhovered || item_selected) {
+            bool lactive = (lheld && lhovered) || (item_selected && !lhovered);
+            const ImU32 label_col = ImGui::GetColorU32(lactive ? ImGuiCol_ButtonActive : lhovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+            ImGui::RenderFrame(label_bb.Min, label_bb.Max, label_col, false, style.FrameRounding);
+        }
+
+        if (g.LogEnabled)
+            ImGui::LogSetNextTextDecoration("[", "]");
+
+        const ImVec2 label_text_size = ImGui::CalcTextSize(p, NULL, true);
+        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, p, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
+        p += strlen(p) + 1;
+    }
+
+    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+    return pressed;
+}
+
+bool ActiveButton(const char* label, bool active, const ImVec2& size_arg)
+{
+    if (active) {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+    }
+
+    bool result = ImGui::Button(label, size_arg);
+
+    if (active) {
+        ImGui::PopStyleColor(2);
+    }
+
+    return result;
+}
+
 }

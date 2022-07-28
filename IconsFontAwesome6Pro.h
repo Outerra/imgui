@@ -992,7 +992,7 @@
 #define ICON_FA_DISPLAY_SLASH "\xee\x8b\xba"	// U+e2fa
 #define ICON_FA_DISTRIBUTE_SPACING_HORIZONTAL "\xee\x8d\xa5"	// U+e365
 #define ICON_FA_DISTRIBUTE_SPACING_VERTICAL "\xee\x8d\xa6"	// U+e366
-#define ICON_FA_DITTO """	// U+22
+#define ICON_FA_DITTO "\""	// U+22
 #define ICON_FA_DIVIDE "\xef\x94\xa9"	// U+f529
 #define ICON_FA_DNA "\xef\x91\xb1"	// U+f471
 #define ICON_FA_DO_NOT_ENTER "\xef\x97\xac"	// U+f5ec
