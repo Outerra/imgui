@@ -8,7 +8,8 @@
 static constexpr ImU32 IM_FORCED_COLOR = IM_COL32(255, 130, 40, 255);
 static constexpr ImU32 IM_ERROR_COLOR = IM_COL32(255, 130, 120, 255);
 
-typedef int ImGuiTextClippedFlags;               // -> enum ImGuiTextClippedFlags_     // Flags: for TextClipped()
+typedef int ImGuiTextClippedFlags;              // -> enum ImGuiTextClippedFlags_       // Flags: for TextClipped()
+typedef int ImGuiInputBitfieldFlags;            // -> enum ImGuiInputBitfieldFlags_     // Flags: for InputBitfield()
 
 // Flags for TextClipped()
 enum ImGuiTextClippedFlags_
@@ -17,6 +18,13 @@ enum ImGuiTextClippedFlags_
     ImGuiTextClippedFlags_Center = 1 << 0,      // Center text if shorter than max_width
     ImGuiTextClippedFlags_UseTooltip = 1 << 1,  // Show tooltip with whole text if clipped
 };
+
+enum ImGuiInputBitfieldFlags_
+{
+    ImGuiInputBitfieldFlags_None = 0,
+    ImGuiInputBitfieldFlags_ReadOnly = 1 << 0,      // Read-only mode
+};
+
 
 namespace ImGui
 {
@@ -285,6 +293,9 @@ IMGUI_API bool Combo(const char* label, int* current_item, const char* items_sep
 IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 
 IMGUI_API bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros);
+IMGUI_API bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
+
+IMGUI_API bool ActiveButton(const char* label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
 
 }
 
