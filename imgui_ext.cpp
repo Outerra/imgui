@@ -636,6 +636,31 @@ bool InputFloat3(const char* label, float v[3], const char* format, ImGuiInputTe
     return result;
 }
 
+bool InputFloatCheckbox(const char* label, float* v, bool* s, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+{
+    //shows checkbox before the value, for combined and compact enable+value display
+    ImGuiEx::Label(label);
+    float width = ImGui::CalcItemWidth();
+
+    ImGui::PushID(label);
+    bool state = ImGui::Checkbox("##InputFloatCheckbox1", s);
+    if (*s == false)
+        format = "";
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    const float button_size = ImGui::GetFrameHeight();
+    ImGui::SetNextItemWidth(width - button_size - style.ItemInnerSpacing.x);
+
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+    bool result = ImGui::InputFloat("##InputFloatCheckbox2", v, step, step_fast, format, flags);
+    if (ImGui::IsItemDeactivatedAfterEdit()) {
+        *s = true;
+    }
+    ImGui::PopID();
+    return state || result;
+}
+
 bool InputFloat4(const char* label, float v[4], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
