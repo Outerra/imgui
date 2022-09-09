@@ -898,6 +898,19 @@ bool CheckBoxTristate(const char* label, int* v_tristate)
     return result;
 }
 
+bool BeginListBox(const char* label, const ImVec2& size_arg)
+{
+    ImGuiEx::Label(label);
+    static char id_buff[128] = { 0 };
+    sprintf_s(id_buff, sizeof(id_buff), "##%s", label);
+    return ImGui::BeginListBox(id_buff, size_arg);
+}
+
+void EndListBox()
+{
+    ImGui::EndListBox();
+}
+
 bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros)
 {
     int items_count = 0;

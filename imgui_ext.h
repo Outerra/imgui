@@ -294,6 +294,9 @@ IMGUI_API void EndCombo();
 IMGUI_API bool Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
 IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
 
+IMGUI_API bool BeginListBox(const char* label, const ImVec2& size_arg = ImVec2(0, 0));
+IMGUI_API void EndListBox();
+
 IMGUI_API bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros);
 IMGUI_API bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
 
