@@ -1,6 +1,7 @@
 #pragma once
 
 #include "comm/commtypes.h"
+#include "comm/str.h"
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 #include "imgui.h"
 #undef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
@@ -301,6 +302,9 @@ IMGUI_API bool MultistateToggleButton(const char* label, int* current_item, cons
 IMGUI_API bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
 
 IMGUI_API bool ActiveButton(const char* label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
+
+IMGUI_API bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
 
 }
 
