@@ -1059,4 +1059,48 @@ bool ActiveButton(const char* label, bool active, const ImVec2& size_arg)
     return result;
 }
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
+{
+
+    coid::charstr* buf = static_cast<coid::charstr*>(data->UserData);
+
+    if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0)
+    {
+        buf->get_buf(data->BufSize - 1);
+    }
+
+    return 0;
+}
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+bool InputTextCharstr(const char* label, coid::charstr& buf , ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+
+    if (buf.is_empty())
+    {
+        buf.reserve(16);
+        *buf.ptr_ref() = 0;
+    }
+
+    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    ImGui::PopID();
+    return result;
+}
+
+IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags)
+{
+    if (buf.is_empty())
+    {
+        buf.reserve(16);
+        *buf.ptr_ref() = 0;
+    }
+
+    return ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+}
+
 }
