@@ -310,15 +310,16 @@ IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coi
 
 struct ImGuiTextureExt
 {
-    unsigned int env = 0;
+    enum Etype : unsigned int { rgb = 0, env = 1, ycocg = 2 };
+    Etype type = rgb;
     unsigned int id = 0;
 
     ImGuiTextureExt() {}
 
     ImGuiTextureExt(ImTextureID imTexId) {
-        env = (unsigned int)(intptr_t(imTexId) >> 32u);
+        type = (Etype)(unsigned int)(intptr_t(imTexId) >> 32u);
         id = (unsigned int)(intptr_t(imTexId) & 0xFFFFffffu);
     }
 
-    ImTextureID getImTexID() { return (ImTextureID)(intptr_t(env) << 32u | intptr_t(id)); }
+    ImTextureID getImTexID() { return (ImTextureID)(intptr_t(type) << 32u | intptr_t(id)); }
 };

@@ -1,6 +1,5 @@
 #include "imgui_ext.h"
 
-#include <utility>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 
@@ -343,6 +342,11 @@ bool Checkbox(const char* label, bool* v)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
+
+    const ImGuiStyle& style = ImGui::GetStyle();
+    float max_width = ImGui::CalcItemWidth();
+    float width = ImGui::GetFrameHeight() + style.FramePadding.y * 2.0f;
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (max_width - width) * 0.5f);
     bool result = ImGui::Checkbox("##Checkbox", v);
     ImGui::PopID();
     return result;
@@ -871,7 +875,7 @@ bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags fl
 {
     ImGuiEx::Label(label);
     static char id_buff[128] = { 0 };
-    sprintf_s(id_buff, sizeof(id_buff), "##%s", label);
+    sprintf_s(id_buff, sizeof(id_buff), "## %s", label);
     return ImGui::BeginCombo(id_buff, preview_value, flags);
 }
 
@@ -1076,7 +1080,7 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-bool InputTextCharstr(const char* label, coid::charstr& buf , ImGuiInputTextFlags flags)
+bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1092,7 +1096,7 @@ bool InputTextCharstr(const char* label, coid::charstr& buf , ImGuiInputTextFlag
     return result;
 }
 
-IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags)
+bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags)
 {
     if (buf.is_empty())
     {
