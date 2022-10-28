@@ -3201,6 +3201,11 @@ bool ImGui::SliderBehaviorT(const ImRect& bb, ImGuiID id, ImGuiDataType data_typ
         float clicked_t = 0.0f;
         if (g.ActiveIdSource == ImGuiInputSource_Mouse)
         {
+            if (!g.IO.MouseDown[0])
+            {
+                ClearActiveID();
+            }
+            //else
             const float mouse_pos = g.IO.MousePos[axis];
             if (g.ActiveIdIsJustActivated)
             {
@@ -3330,8 +3335,8 @@ bool ImGui::SliderBehavior(const ImRect& bb, ImGuiID id, ImGuiDataType data_type
     ImGuiContext& g = *GImGui;
     if (g.ActiveId == id)
     {
-        if (g.ActiveIdSource == ImGuiInputSource_Mouse && !g.IO.MouseDown[0])
-            ClearActiveID();
+        //if (g.ActiveIdSource == ImGuiInputSource_Mouse && !g.IO.MouseDown[0])
+        //    ClearActiveID(); // done in SliderBehaviorT, which still applies the release frame's mouse position
         if (g.ActiveIdSource == ImGuiInputSource_Keyboard || g.ActiveIdSource == ImGuiInputSource_Gamepad)
         {
             if (g.ActiveIdIsJustActivated)
