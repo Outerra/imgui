@@ -141,7 +141,7 @@ struct ImNodeData
 
     struct
     {
-        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar, TitlebarHovered,
+        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, OutlineHovered, OutlineSelected, Titlebar, TitlebarHovered,
             TitlebarSelected;
     } ColorStyle;
 
@@ -191,14 +191,14 @@ struct ImPinData
 struct ImLinkData
 {
     int Id;
-    int StartPinIdx, EndPinIdx;
+    int StartIdx, EndIdx;
 
     struct
     {
         ImU32 Base, Hovered, Selected;
     } ColorStyle;
 
-    ImLinkData(const int link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
+    ImLinkData(const int link_id) : Id(link_id), StartIdx(), EndIdx(), ColorStyle() {}
 };
 
 struct ImClickInteractionState
@@ -207,8 +207,8 @@ struct ImClickInteractionState
 
     struct
     {
-        int                     StartPinIdx;
-        ImOptionalIndex         EndPinIdx;
+        int                     StartIdx;
+        ImOptionalIndex         EndIdx;
         ImNodesLinkCreationType Type;
     } LinkCreation;
 
@@ -291,6 +291,7 @@ struct ImNodesContext
     ImNodesScope CurrentScope;
 
     // Configuration state
+    ImNodesContextFlags              Flags;
     ImNodesIO                        Io;
     ImNodesStyle                     Style;
     ImVector<ImNodesColElement>      ColorModifierStack;
