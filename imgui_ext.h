@@ -123,9 +123,6 @@ struct TreeViewClipper {
 IMGUI_API void PushDragDropStyle();
 IMGUI_API void PopDragDropStyle();
 
-IMGUI_API void PushDisable();
-IMGUI_API void PopDisable();
-
 template<typename T>
 inline bool SliderScalarT(const char* label, T& p_data, const T p_min, const T p_max, const char* format = NULL, ImGuiSliderFlags flags = 0) {
     if constexpr (std::is_same_v<T, int8>)

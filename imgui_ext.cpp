@@ -153,17 +153,6 @@ bool CheckboxForced(const char* label, bool& forced, bool* v) {
 }
 
 
-void PushDisable()
-{
-    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-}
-void PopDisable()
-{
-    ImGui::PopStyleVar();
-    ImGui::PopItemFlag();
-}
-
 bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
 {
     return ImGui::SliderScalar(label, ImGuiDataType_U32, v, &v_min, &v_max, format, flags);
