@@ -6,6 +6,7 @@ typedef int ImNodesCol;             // -> enum ImNodesCol_
 typedef int ImNodesStyleVar;        // -> enum ImNodesStyleVar_
 typedef int ImNodesStyleFlags;      // -> enum ImNodesStyleFlags_
 typedef int ImNodesPinShape;        // -> enum ImNodesPinShape_
+typedef int ImNodesContextFlags;    // -> enum ImNodesContextFlags_
 typedef int ImNodesAttributeFlags;  // -> enum ImNodesAttributeFlags_
 typedef int ImNodesMiniMapLocation; // -> enum ImNodesMiniMapLocation_
 
@@ -15,6 +16,8 @@ enum ImNodesCol_
     ImNodesCol_NodeBackgroundHovered,
     ImNodesCol_NodeBackgroundSelected,
     ImNodesCol_NodeOutline,
+    ImNodesCol_NodeOutlineHovered,
+    ImNodesCol_NodeOutlineSelected,
     ImNodesCol_TitleBar,
     ImNodesCol_TitleBarHovered,
     ImNodesCol_TitleBarSelected,
@@ -73,6 +76,12 @@ enum ImNodesPinShape_
     ImNodesPinShape_TriangleFilled,
     ImNodesPinShape_Quad,
     ImNodesPinShape_QuadFilled
+};
+
+enum ImNodesContextFlags_
+{
+    ImNodesContextFlags_Default = 0, //use pins for node linking
+    ImNodesContextFlags_NodeLinks = 1 << 0, // use linking directly between nodes
 };
 
 // This enum controls the way the attribute pins behave.
@@ -199,7 +208,7 @@ namespace ImNodes
 // function sets the GImGui global variable, which is not shared across dll boundaries.
 void SetImGuiContext(ImGuiContext* ctx);
 
-ImNodesContext* CreateContext();
+ImNodesContext* CreateContext(ImNodesContextFlags flags = 0);
 void            DestroyContext(ImNodesContext* ctx = NULL); // NULL = destroy current context
 ImNodesContext* GetCurrentContext();
 void            SetCurrentContext(ImNodesContext* ctx);
@@ -234,10 +243,10 @@ void MiniMap(
     void*                                    node_hovering_callback_data = NULL);
 
 // Use PushColorStyle and PopColorStyle to modify ImNodesStyle::Colors mid-frame.
-void PushColorStyle(ImNodesCol item, unsigned int color);
-void PopColorStyle();
+void PushStyleColor(ImNodesCol item, unsigned int color);
+void PopStyleColor(int count = 1);
 void PushStyleVar(ImNodesStyleVar style_item, float value);
-void PopStyleVar();
+void PopStyleVar(int count = 1);
 
 // id can be any positive or negative integer, but INT_MIN is currently reserved for internal use.
 void BeginNode(int id);
@@ -335,18 +344,18 @@ bool IsAnyAttributeActive(int* attribute_id = NULL);
 // these after EndNodeEditor().
 
 // Did the user start dragging a new link from a pin?
-bool IsLinkStarted(int* started_at_attribute_id);
+bool IsLinkStarted(int* started_at_id);
 // Did the user drop the dragged link before attaching it to a pin?
 // There are two different kinds of situations to consider when handling this event:
 // 1) a link which is created at a pin and then dropped
 // 2) an existing link which is detached from a pin and then dropped
 // Use the including_detached_links flag to control whether this function triggers when the user
 // detaches a link and drops it.
-bool IsLinkDropped(int* started_at_attribute_id = NULL, bool including_detached_links = true);
+bool IsLinkDropped(int* started_at_id = NULL, bool including_detached_links = true);
 // Did the user finish creating a new link?
 bool IsLinkCreated(
-    int*  started_at_attribute_id,
-    int*  ended_at_attribute_id,
+    int*  started_at_id,
+    int*  ended_at_id,
     bool* created_from_snap = NULL);
 bool IsLinkCreated(
     int*  started_at_node_id,
