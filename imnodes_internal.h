@@ -135,6 +135,7 @@ private:
 struct ImNodeData
 {
     int    Id;
+    int    ParentNodeIdx;
     ImVec2 Origin; // The node origin is in editor space
     ImRect TitleBarContentRect;
     ImRect Rect;
@@ -156,7 +157,7 @@ struct ImNodeData
     bool          Draggable;
 
     ImNodeData(const int node_id)
-        : Id(node_id), Origin(100.0f, 100.0f), TitleBarContentRect(),
+        : Id(node_id), ParentNodeIdx(INT_MAX), Origin(100.0f, 100.0f), TitleBarContentRect(),
           Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
           Draggable(true)
     {
@@ -467,6 +468,7 @@ inline int ObjectPoolFindOrCreateIndex(ImObjectPool<ImNodeData>& nodes, const in
 
         ImNodesEditorContext& editor = EditorContextGet();
         editor.NodeDepthOrder.push_back(node_idx);
+        //TODO: NodeDepthOrder can be corrupted if same nodes are used for different user "context" (children nodes can became separated from parent)
     }
 
     // Flag node as used

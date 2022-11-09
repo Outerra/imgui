@@ -220,6 +220,8 @@ ImVec2                EditorContextGetPanning();
 void                  EditorContextResetPanning(const ImVec2& pos);
 void                  EditorContextMoveToNode(const int node_id);
 
+ImVec2                EditorContextScreenSpaceToGridSpace(const ImVec2& pos);
+
 ImNodesIO& GetIO();
 
 // Returns the global style struct. See the struct declaration for default values.
@@ -304,11 +306,11 @@ void SetNodeDraggable(int node_id, const bool draggable);
 
 void SetNodeScreenSpacePos(int node_id, const ImVec2& screen_space_pos);
 void SetNodeEditorSpacePos(int node_id, const ImVec2& editor_space_pos);
-void SetNodeGridSpacePos(int node_id, const ImVec2& grid_pos);
+void SetNodeGridSpacePos(int node_id, const ImVec2& grid_pos, bool relative = true);
 
 ImVec2 GetNodeScreenSpacePos(const int node_id);
 ImVec2 GetNodeEditorSpacePos(const int node_id);
-ImVec2 GetNodeGridSpacePos(const int node_id);
+ImVec2 GetNodeGridSpacePos(const int node_id, bool relative = true);
 
 // Returns true if the current node editor canvas is being hovered over by the mouse, and is not
 // blocked by any other windows.
@@ -329,6 +331,9 @@ int NumSelectedLinks();
 // returned.
 void GetSelectedNodes(int* node_ids);
 void GetSelectedLinks(int* link_ids);
+
+void SetSelectedNodes(int* node_ids, int count);
+void SetSelectedLinks(int* link_ids, int count);
 
 // Clears the list of selected nodes/links. Useful if you want to delete a selected node or link.
 void ClearNodeSelection();
