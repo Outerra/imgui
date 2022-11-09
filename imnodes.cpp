@@ -62,6 +62,18 @@ static inline ImVec2 EditorSpaceToScreenSpace(const ImVec2& v)
     return GImNodes->CanvasOriginScreenSpace + v;
 }
 
+static inline ImVec2 CalcNodeOrigin(const ImNodesEditorContext& editor, const ImNodeData& node)
+{
+    ImVec2 result = node.Origin;
+    int parent_idx = node.ParentNodeIdx;
+    while (parent_idx != INT_MAX) {
+        const ImNodeData& parent = editor.Nodes.Pool[parent_idx];
+        result += parent.Origin;
+        parent_idx = parent.ParentNodeIdx;
+    }
+    return result;
+}
+
 // [SECTION] bezier curve helpers
 
 struct CubicBezier
@@ -581,6 +593,82 @@ bool MouseInCanvas()
            GImNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
 }
 
+static inline bool IsNodeChildOf(ImNodesEditorContext& editor, const int node_idx, const int parent_idx)
+{
+    int node_parent_idx = editor.Nodes.Pool[node_idx].ParentNodeIdx;
+    while (node_parent_idx != INT_MAX) {
+        if (node_parent_idx == parent_idx)
+            return true;
+        node_parent_idx = editor.Nodes.Pool[node_parent_idx].ParentNodeIdx;
+    }
+    return false;
+}
+
+static inline int GetLastDepthChild(ImNodesEditorContext& editor, const int depth_idx)
+{
+    ImVector<int>& depth_stack = editor.NodeDepthOrder;
+    int node_idx = depth_stack[depth_idx];
+    const ImNodeData& node = editor.Nodes.Pool[node_idx];
+    for (int i = depth_idx + 1, c = depth_stack.Size; i < c; ++i) {
+        if (!IsNodeChildOf(editor, depth_stack[i], node_idx)) {
+            return i - 1;
+        }
+    }
+    return depth_stack.Size - 1;
+}
+
+static inline void MoveDepthNodeToTop(ImNodesEditorContext& editor, const int depth_idx)
+{
+    //int last_children = GetLastDepthChildren(editor, depth_idx);
+    ImVector<int>& depth_stack = editor.NodeDepthOrder;
+    int node_idx = depth_stack[depth_idx];
+    const ImNodeData& node = editor.Nodes.Pool[node_idx];
+    if (node.ParentNodeIdx != INT_MAX) {
+        const int* depth_elem = depth_stack.find(node.ParentNodeIdx);
+        assert(depth_elem != depth_stack.end());
+        int parent_depth_idx = int(depth_elem - depth_stack.begin());
+
+        int last_depth_sibling_idx = GetLastDepthChild(editor, parent_depth_idx);
+        if (last_depth_sibling_idx > depth_idx) { // move given node to top of parent node
+            bool is_on_end = last_depth_sibling_idx + 1 == depth_stack.Size;
+            int last_depth_child_idx = GetLastDepthChild(editor, depth_idx);
+            for (int i = depth_idx; i <= last_depth_child_idx; ++i) {
+                int val = depth_stack[depth_idx];
+                depth_stack.erase(&depth_stack[depth_idx]);
+                if (is_on_end)
+                    depth_stack.push_back(val);
+                else
+                    depth_stack.insert(&depth_stack[last_depth_sibling_idx], val);
+            }
+        }
+
+        int top_parent_idx = node.ParentNodeIdx;
+        while (editor.Nodes.Pool[top_parent_idx].ParentNodeIdx != INT_MAX)
+            top_parent_idx = editor.Nodes.Pool[top_parent_idx].ParentNodeIdx;
+
+        depth_elem = depth_stack.find(top_parent_idx);
+        assert(depth_elem != depth_stack.end());
+        parent_depth_idx = int(depth_elem - depth_stack.begin());
+        int last_depth_child_idx = GetLastDepthChild(editor, parent_depth_idx);
+        if (last_depth_child_idx + 1 < depth_stack.Size) {
+            for (int i = parent_depth_idx; i <= last_depth_child_idx; ++i) {
+                int val = depth_stack[parent_depth_idx];
+                depth_stack.erase(&depth_stack[parent_depth_idx]);
+                depth_stack.push_back(val);
+            }
+        }
+    }
+    else {
+        int last_depth_child = GetLastDepthChild(editor, depth_idx);
+        for (int i = depth_idx; i <= last_depth_child; ++i) {
+            int val = depth_stack[depth_idx];
+            depth_stack.erase(&depth_stack[depth_idx]);
+            depth_stack.push_back(val);
+        }
+    }
+
+}
+
 void BeginNodeSelection(ImNodesEditorContext& editor, const int node_idx)
 {
     // Don't start selecting a node if we are e.g. already creating and dragging
@@ -604,11 +692,10 @@ void BeginNodeSelection(ImNodesEditorContext& editor, const int node_idx)
         editor.SelectedNodeIndices.push_back(node_idx);
 
         // Ensure that individually selected nodes get rendered on top
-        ImVector<int>&   depth_stack = editor.NodeDepthOrder;
+        ImVector<int>& depth_stack = editor.NodeDepthOrder;
         const int* const elem = depth_stack.find(node_idx);
         assert(elem != depth_stack.end());
-        depth_stack.erase(elem);
-        depth_stack.push_back(node_idx);
+        MoveDepthNodeToTop(editor, int(elem - depth_stack.begin()));
     }
 }
 
@@ -663,8 +750,8 @@ void BeginLinkInteraction(ImNodesEditorContext& editor, const int link_idx)
                 const ImNodeData& start_node = editor.Nodes.Pool[link.StartIdx];
                 const ImNodeData& end_node = editor.Nodes.Pool[link.EndIdx];
                 
-                const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, start_node.Origin) + start_node.Rect.GetSize() * 0.5f;
-                const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, end_node.Origin) + end_node.Rect.GetSize() * 0.5f;
+                const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node)) + start_node.Rect.GetSize() * 0.5f;
+                const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node)) + end_node.Rect.GetSize() * 0.5f;
                 const float dist_to_start = ImLengthSqr(start_node_pos - mouse_pos);
                 const float dist_to_end = ImLengthSqr(end_node_pos - mouse_pos);
                 closest_pin_idx =
@@ -798,8 +885,8 @@ void BoxSelectorUpdateSelection(ImNodesEditorContext& editor, ImRect box_rect)
             if (GImNodes->Flags & ImNodesContextFlags_NodeLinks) {
                 const ImNodeData& start_node = editor.Nodes.Pool[link.StartIdx];
                 const ImNodeData& end_node = editor.Nodes.Pool[link.EndIdx];
-                const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, start_node.Origin);
-                const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, end_node.Origin);
+                const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node));
+                const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node));
 
                 const LineSegment seg_center = { start_node_pos + start_node.Rect.GetSize() * 0.5f, end_node_pos + end_node.Rect.GetSize() * 0.5f };
                 const LineSegment seg = GetLineSegmentWithOffset(seg_center);
@@ -984,27 +1071,12 @@ void ClickInteractionUpdate(ImNodesEditorContext& editor)
             const ImVector<int>& selected_idxs = editor.SelectedNodeIndices;
 
             // Bump the selected node indices, in order, to the top of the depth stack.
-            // NOTE: this algorithm has worst case time complexity of O(N^2), if the node selection
-            // is ~ N (due to selected_idxs.contains()).
 
-            if ((selected_idxs.Size > 0) && (selected_idxs.Size < depth_stack.Size))
+            for (int i = 0; i < selected_idxs.Size; ++i)
             {
-                int num_moved = 0; // The number of indices moved. Stop after selected_idxs.Size
-                for (int i = 0; i < depth_stack.Size - selected_idxs.Size; ++i)
-                {
-                    for (int node_idx = depth_stack[i]; selected_idxs.contains(node_idx);
-                         node_idx = depth_stack[i])
-                    {
-                        depth_stack.erase(depth_stack.begin() + static_cast<size_t>(i));
-                        depth_stack.push_back(node_idx);
-                        ++num_moved;
-                    }
-
-                    if (num_moved == selected_idxs.Size)
-                    {
-                        break;
-                    }
-                }
+                const int* const elem = depth_stack.find(selected_idxs[i]);
+                assert(elem != depth_stack.end());
+                MoveDepthNodeToTop(editor, int(elem - depth_stack.begin()));
             }
 
             editor.ClickInteraction.Type = ImNodesClickInteractionType_None;
@@ -1063,18 +1135,16 @@ void ClickInteractionUpdate(ImNodesEditorContext& editor)
                     editor.ClickInteraction.LinkCreation.EndIdx.Value());
             }
 
-            ImVec2 start_pos = GridSpaceToScreenSpace(editor, start_node.Origin) + start_node.Rect.GetSize() * 0.5f;
+            ImVec2 start_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node)) + start_node.Rect.GetSize() * 0.5f;
             // If we are within the hover radius of a receiving node, snap the link
             // endpoint to it
             ImVec2 end_pos = GImNodes->MousePos;
             if (should_snap) {
                 const ImNodeData& end_node = editor.Nodes.Pool[GImNodes->HoveredNodeIdx.Value()];
-                end_pos = GridSpaceToScreenSpace(editor, end_node.Origin) + end_node.Rect.GetSize() * 0.5f;
+                end_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node)) + end_node.Rect.GetSize() * 0.5f;
             }
             LineSegment seg = { start_pos, end_pos };
             seg = GetLineSegmentWithOffset(seg);
-
-            //TODO: offset line ?? ////////////////////////////////////////////////////////////////////////////////////////////////
 
             GImNodes->CanvasDrawList->AddLine(seg.P0, seg.P1, GImNodes->Style.Colors[ImNodesCol_Link], GImNodes->Style.LinkThickness);
 
@@ -1461,8 +1531,8 @@ ImOptionalIndex ResolveHoveredLinkNodes(
         }
 
         ImNodesEditorContext& editor = EditorContextGet();
-        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, start_node.Origin);
-        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, end_node.Origin);
+        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node));
+        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node));
 
         const LineSegment seg_center = { start_node_pos + start_node.Rect.GetSize() * 0.5f, end_node_pos + end_node.Rect.GetSize() * 0.5f };
         const LineSegment seg = GetLineSegmentWithOffset(seg_center);
@@ -1498,16 +1568,16 @@ ImOptionalIndex ResolveHoveredLink(
 
 static inline ImRect GetItemRect() { return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
 
-static inline ImVec2 GetNodeTitleBarOrigin(const ImNodeData& node)
+static inline ImVec2 GetNodeTitleBarOrigin(const ImNodesEditorContext& editor, const ImNodeData& node)
 {
-    return node.Origin + node.LayoutStyle.Padding;
+    return CalcNodeOrigin(editor, node) + node.LayoutStyle.Padding;
 }
 
-static inline ImVec2 GetNodeContentOrigin(const ImNodeData& node)
+static inline ImVec2 GetNodeContentOrigin(const ImNodesEditorContext& editor, const ImNodeData& node)
 {
     const ImVec2 title_bar_height =
         ImVec2(0.f, node.TitleBarContentRect.GetHeight() + 2.0f * node.LayoutStyle.Padding.y);
-    return node.Origin + title_bar_height + node.LayoutStyle.Padding;
+    return CalcNodeOrigin(editor, node) + title_bar_height + node.LayoutStyle.Padding;
 }
 
 static inline ImRect GetNodeTitleRect(const ImNodeData& node)
@@ -1701,7 +1771,7 @@ void DrawPin(ImNodesEditorContext& editor, const int pin_idx, const bool left_mo
 void DrawNode(ImNodesEditorContext& editor, const int node_idx)
 {
     const ImNodeData& node = editor.Nodes.Pool[node_idx];
-    ImGui::SetCursorPos(node.Origin + editor.Panning);
+    ImGui::SetCursorPos(CalcNodeOrigin(editor, node) + editor.Panning);
 
     const bool node_hovered =
         GImNodes->HoveredNodeIdx == node_idx &&
@@ -1824,8 +1894,8 @@ void DrawLink(ImNodesEditorContext& editor, const int link_idx)
     if (GImNodes->Flags & ImNodesContextFlags_NodeLinks) {
         const ImNodeData& start_node = editor.Nodes.Pool[link.StartIdx];
         const ImNodeData& end_node = editor.Nodes.Pool[link.EndIdx];
-        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, start_node.Origin);
-        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, end_node.Origin);
+        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node));
+        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node));
 
         const float offset = GImNodes->Style.LinkThickness;
         const LineSegment seg_center = { start_node_pos + start_node.Rect.GetSize() * 0.5f, end_node_pos + end_node.Rect.GetSize() * 0.5f};
@@ -2076,8 +2146,8 @@ static void MiniMapDrawLink(
     if (GImNodes->Flags & ImNodesContextFlags_NodeLinks) {
         const ImNodeData& start_node = editor.Nodes.Pool[link.StartIdx];
         const ImNodeData& end_node = editor.Nodes.Pool[link.EndIdx];
-        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, start_node.Origin);
-        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, end_node.Origin);
+        const ImVec2 start_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, start_node));
+        const ImVec2 end_node_pos = GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, end_node));
 
         const LineSegment seg_center = {
             (start_node_pos + start_node.Rect.GetSize() * 0.5f - editor_center) * scaling + mini_map_center,
@@ -2265,8 +2335,14 @@ void EditorContextMoveToNode(const int node_id)
     ImNodesEditorContext& editor = EditorContextGet();
     ImNodeData&           node = ObjectPoolFindOrCreateObject(editor.Nodes, node_id);
 
-    editor.Panning.x = -node.Origin.x;
-    editor.Panning.y = -node.Origin.y;
+    editor.Panning.x = -node.Origin.x;//TODO: CalcNodeOrigin(editor, node) ???
+    editor.Panning.y = -node.Origin.y;//TODO: CalcNodeOrigin(editor, node) ???
+}
+
+ImVec2 EditorContextScreenSpaceToGridSpace(const ImVec2& pos)
+{
+    const ImNodesEditorContext& editor = EditorContextGet();
+    return ScreenSpaceToGridSpace(editor, pos);
 }
 
 void SetImGuiContext(ImGuiContext* ctx) { ImGui::SetCurrentContext(ctx); }
@@ -2593,15 +2669,15 @@ void MiniMap(
 void BeginNode(const int node_id)
 {
     // Remember to call BeginNodeEditor before calling BeginNode
-    assert(GImNodes->CurrentScope == ImNodesScope_Editor);
+    //assert(GImNodes->CurrentScope == ImNodesScope_Editor);
     GImNodes->CurrentScope = ImNodesScope_Node;
 
     ImNodesEditorContext& editor = EditorContextGet();
 
     const int node_idx = ObjectPoolFindOrCreateIndex(editor.Nodes, node_id);
-    GImNodes->CurrentNodeIdx = node_idx;
 
     ImNodeData& node = editor.Nodes.Pool[node_idx];
+    node.ParentNodeIdx = GImNodes->CurrentNodeIdx;
     node.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_NodeBackground];
     node.ColorStyle.BackgroundHovered = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundHovered];
     node.ColorStyle.BackgroundSelected = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundSelected];
@@ -2616,10 +2692,11 @@ void BeginNode(const int node_id)
         ImVec2(GImNodes->Style.NodePaddingHorizontal, GImNodes->Style.NodePaddingVertical);
     node.LayoutStyle.BorderThickness = GImNodes->Style.NodeBorderThickness;
 
+    GImNodes->CurrentNodeIdx = node_idx;
     // ImGui::SetCursorPos sets the cursor position, local to the current widget
     // (in this case, the child object started in BeginNodeEditor). Use
     // ImGui::SetCursorScreenPos to set the screen space coordinates directly.
-    ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeTitleBarOrigin(node)));
+    ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeTitleBarOrigin(editor, node)));
 
     DrawListAddNode(node_idx);
     DrawListActivateCurrentNodeForeground();
@@ -2631,7 +2708,6 @@ void BeginNode(const int node_id)
 void EndNode()
 {
     assert(GImNodes->CurrentScope == ImNodesScope_Node);
-    GImNodes->CurrentScope = ImNodesScope_Editor;
 
     ImNodesEditorContext& editor = EditorContextGet();
 
@@ -2647,6 +2723,9 @@ void EndNode()
     {
         GImNodes->NodeIndicesOverlappingWithMouse.push_back(GImNodes->CurrentNodeIdx);
     }
+
+    GImNodes->CurrentNodeIdx = node.ParentNodeIdx;
+    GImNodes->CurrentScope = GImNodes->CurrentNodeIdx == INT_MAX ? ImNodesScope_Editor : ImNodesScope_Node;
 }
 
 ImVec2 GetNodeDimensions(int node_id)
@@ -2675,7 +2754,7 @@ void EndNodeTitleBar()
 
     ImGui::ItemAdd(GetNodeTitleRect(node), ImGui::GetID("title_bar"));
 
-    ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeContentOrigin(node)));
+    ImGui::SetCursorPos(GridSpaceToEditorSpace(editor, GetNodeContentOrigin(editor, node)));
 }
 
 void BeginInputAttribute(const int id, const ImNodesPinShape shape)
@@ -2869,20 +2948,43 @@ void SetNodeScreenSpacePos(const int node_id, const ImVec2& screen_space_pos)
 {
     ImNodesEditorContext& editor = EditorContextGet();
     ImNodeData&           node = ObjectPoolFindOrCreateObject(editor.Nodes, node_id);
-    node.Origin = ScreenSpaceToGridSpace(editor, screen_space_pos);
+    ImVec2 grid_pos = ScreenSpaceToGridSpace(editor, screen_space_pos);
+    int parent_idx = node.ParentNodeIdx;
+    while (parent_idx != INT_MAX) {
+        ImNodeData& parent = editor.Nodes.Pool[parent_idx];
+        grid_pos -= parent.Origin;
+        parent_idx = parent.ParentNodeIdx;
+    }
+    node.Origin = grid_pos;
 }
 
 void SetNodeEditorSpacePos(const int node_id, const ImVec2& editor_space_pos)
 {
     ImNodesEditorContext& editor = EditorContextGet();
     ImNodeData&           node = ObjectPoolFindOrCreateObject(editor.Nodes, node_id);
-    node.Origin = EditorSpaceToGridSpace(editor, editor_space_pos);
+    ImVec2 grid_pos = ScreenSpaceToGridSpace(editor, editor_space_pos);
+    int parent_idx = node.ParentNodeIdx;
+    while (parent_idx != INT_MAX) {
+        ImNodeData& parent = editor.Nodes.Pool[parent_idx];
+        grid_pos -= parent.Origin;
+        parent_idx = parent.ParentNodeIdx;
+    }
+    node.Origin = grid_pos;
 }
 
-void SetNodeGridSpacePos(const int node_id, const ImVec2& grid_pos)
+void SetNodeGridSpacePos(const int node_id, const ImVec2& grid_pos, bool relative)
 {
     ImNodesEditorContext& editor = EditorContextGet();
     ImNodeData&           node = ObjectPoolFindOrCreateObject(editor.Nodes, node_id);
+    ImVec2 node_grid_pos = grid_pos;
+    if (!relative) {
+        int parent_idx = node.ParentNodeIdx;
+        while (parent_idx != INT_MAX) {
+            ImNodeData& parent = editor.Nodes.Pool[parent_idx];
+            node_grid_pos -= parent.Origin;
+            parent_idx = parent.ParentNodeIdx;
+        }
+    }
     node.Origin = grid_pos;
 }
 
@@ -2899,7 +3001,7 @@ ImVec2 GetNodeScreenSpacePos(const int node_id)
     const int             node_idx = ObjectPoolFind(editor.Nodes, node_id);
     assert(node_idx != -1);
     ImNodeData& node = editor.Nodes.Pool[node_idx];
-    return GridSpaceToScreenSpace(editor, node.Origin);
+    return GridSpaceToScreenSpace(editor, CalcNodeOrigin(editor, node));
 }
 
 ImVec2 GetNodeEditorSpacePos(const int node_id)
@@ -2908,16 +3010,16 @@ ImVec2 GetNodeEditorSpacePos(const int node_id)
     const int             node_idx = ObjectPoolFind(editor.Nodes, node_id);
     assert(node_idx != -1);
     ImNodeData& node = editor.Nodes.Pool[node_idx];
-    return GridSpaceToEditorSpace(editor, node.Origin);
+    return GridSpaceToEditorSpace(editor, CalcNodeOrigin(editor, node));
 }
 
-ImVec2 GetNodeGridSpacePos(const int node_id)
+ImVec2 GetNodeGridSpacePos(const int node_id, bool relative)
 {
     ImNodesEditorContext& editor = EditorContextGet();
     const int             node_idx = ObjectPoolFind(editor.Nodes, node_id);
     assert(node_idx != -1);
     ImNodeData& node = editor.Nodes.Pool[node_idx];
-    return node.Origin;
+    return relative ? node.Origin : CalcNodeOrigin(editor, node);
 }
 
 bool IsEditorHovered() { return MouseInCanvas(); }
@@ -2999,6 +3101,26 @@ void GetSelectedLinks(int* link_ids)
     {
         const int link_idx = editor.SelectedLinkIndices[i];
         link_ids[i] = editor.Links.Pool[link_idx].Id;
+    }
+}
+
+void SetSelectedNodes(int* node_ids, int count)
+{
+    ImNodesEditorContext& editor = EditorContextGet();
+    editor.SelectedNodeIndices.clear();
+    for (int i = 0; i < count; ++i) {
+        const int node_idx = ObjectPoolFindOrCreateIndex(editor.Nodes, node_ids[i]);
+        editor.SelectedNodeIndices.push_back(node_idx);
+    }
+}
+
+void SetSelectedLinks(int* link_ids, int count)
+{
+    ImNodesEditorContext& editor = EditorContextGet();
+    editor.SelectedLinkIndices.clear();
+    for (int i = 0; i < count; ++i) {
+        const int link_idx = ObjectPoolFindOrCreateIndex(editor.Links, link_ids[i]);
+        editor.SelectedLinkIndices.push_back(link_idx);
     }
 }
 
