@@ -177,6 +177,8 @@ IMGUI_API bool             IsWindowDocked(const char* window_name);
 IMGUI_API ImGuiID          GetWindowDockID(const char* window_name);
 //IMGUI_API ImGuiDockNode* DockBuilderGetNode(ImGuiID node_id);
 //inline ImGuiDockNode*    DockBuilderGetCentralNode(ImGuiID node_id) { ImGuiDockNode* node = DockBuilderGetNode(node_id); if (!node) return NULL; return DockNodeGetRootNode(node)->CentralNode; }
+IMGUI_API ImVec2           DockSpaceGetCentralNodeMin(ImGuiID dockspace_id);
+IMGUI_API ImVec2           DockSpaceGetCentralNodeMax(ImGuiID dockspace_id);
 IMGUI_API ImGuiID          AddDockNode(ImGuiID node_id = 0, ImGuiDockNodeFlags flags = 0);
 //IMGUI_API void           DockBuilderRemoveNode(ImGuiID node_id);                 // Remove node and all its child, undock all windows
 //IMGUI_API void           DockBuilderRemoveNodeDockedWindows(ImGuiID node_id, bool clear_settings_refs = true);
@@ -212,6 +214,8 @@ IMGUI_API void RegisterSettingsHandler(
     void* ApplyAllFn,
     void* WriteAllFn
 );
+
+IMGUI_API void ItemSeparator();
 
 }
 
@@ -302,6 +306,9 @@ IMGUI_API bool ActiveButton(const char* label, bool active, const ImVec2& size_a
 
 IMGUI_API bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
+
+IMGUI_API bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
 }
 
