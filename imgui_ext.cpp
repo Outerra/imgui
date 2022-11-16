@@ -2,6 +2,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
+#include "IconsFontAwesome6Pro.h"
 
 
 namespace ImGui
@@ -236,6 +237,20 @@ ImGuiID GetWindowDockID(const char* window_name)
     return node->ID;
 }
 
+ImVec2 DockSpaceGetCentralNodeMin(ImGuiID dockspace_id)
+{
+    ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(dockspace_id);
+    IM_ASSERT(node);
+    return node->Pos;
+}
+
+ImVec2 DockSpaceGetCentralNodeMax(ImGuiID dockspace_id)
+{
+    ImGuiDockNode* node = ImGui::DockBuilderGetCentralNode(dockspace_id);
+    IM_ASSERT(node);
+    return node->Pos + node->Size;
+}
+
 ImGuiID AddDockNode(ImGuiID node_id, ImGuiDockNodeFlags flags)
 {
     return ImGui::DockBuilderAddNode(node_id, flags);
@@ -284,6 +299,15 @@ IMGUI_API void RegisterSettingsHandler(ImGuiContext* context, const char* name, 
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+void ItemSeparator()
+{
+    ImGui::PushStyleColor(ImGuiCol_Separator, ImGui::GetColorU32(ImGuiCol_Border));
+    ImGui::Spacing();
+    ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::PopStyleColor();
+}
 
 }
 
@@ -1094,6 +1118,119 @@ bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr
     }
 
     return ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+}
+
+
+bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
+    ImGuiContext& g = *GImGui;
+    const ImGuiStyle& style = g.Style;
+    const ImGuiID id = window->GetID(label);
+    const float w = ImGui::CalcItemWidth();
+
+    const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
+    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
+
+    const bool temp_input_allowed = (flags & ImGuiSliderFlags_NoInput) == 0;
+    ImGui::ItemSize(total_bb, style.FramePadding.y);
+    if (!ImGui::ItemAdd(total_bb, id, &frame_bb, temp_input_allowed ? ImGuiItemFlags_Inputable : 0))
+        return false;
+
+    // Default format string when passing NULL
+    if (format == NULL)
+        format = ImGui::DataTypeGetInfo(data_type)->PrintFmt;
+
+    // Tabbing or CTRL-clicking on Slider turns it into an input box
+    const bool hovered = ImGui::ItemHoverable(frame_bb, id);
+    bool temp_input_is_active = temp_input_allowed && ImGui::TempInputIsActive(id);
+    if (!temp_input_is_active)
+    {
+        const bool input_requested_by_tabbing = temp_input_allowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
+        const bool clicked = (hovered && g.IO.MouseClicked[0]);
+        if (input_requested_by_tabbing || clicked || g.NavActivateId == id || g.NavActivateInputId == id)
+        {
+            ImGui::SetActiveID(id, window);
+            ImGui::SetFocusID(id, window);
+            ImGui::FocusWindow(window);
+            g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
+            if (temp_input_allowed && (input_requested_by_tabbing || (clicked && g.IO.KeyCtrl) || g.NavActivateInputId == id))
+                temp_input_is_active = true;
+        }
+    }
+
+    if (temp_input_is_active)
+    {
+        // Only clamp CTRL+Click input when ImGuiSliderFlags_AlwaysClamp is set
+        const bool is_clamp_input = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
+        return ImGui::TempInputScalar(frame_bb, id, label, data_type, p_data, format, is_clamp_input ? p_min : NULL, is_clamp_input ? p_max : NULL);
+    }
+
+    // Draw frame
+    const ImU32 frame_col = ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
+    ImGui::RenderNavHighlight(frame_bb, id);
+    ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, frame_col, true, g.Style.FrameRounding);
+
+    // Slider behavior
+    ImRect grab_bb;
+    const bool value_changed = ImGui::SliderBehavior(frame_bb, id, data_type, p_data, p_min, p_max, p_step, format, flags, &grab_bb);
+    if (value_changed) {
+        ImGui::MarkItemEdited(id);
+    }
+
+    // Render grab
+    if (grab_bb.Max.x > grab_bb.Min.x)
+        window->DrawList->AddRectFilled(grab_bb.Min, grab_bb.Max, ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
+
+    // Display value using user-provided display format so user can add prefix/suffix/decorations to the value.
+    char value_buf[64];
+    const char* value_buf_end = value_buf + ImGui::DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, p_data, format);
+    if (g.LogEnabled)
+        ImGui::LogSetNextTextDecoration("{", "}");
+    ImGui::RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
+
+    if (label_size.x > 0.0f)
+        ImGui::RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, frame_bb.Min.y + style.FramePadding.y), label);
+
+    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+    return value_changed;
+}
+
+bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format, ImGuiSliderFlags flags)
+{
+    ImGuiEx::Label(label);
+
+    ImGui::PushID(label);
+    bool changed = false;
+    const ImGuiStyle& style = ImGui::GetStyle();
+    float width = ImGui::GetContentRegionAvail().x;
+    float slider_width = width - (style.ItemInnerSpacing.x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
+    if (ImGui::Button(ICON_FA_ANGLE_LEFT)) {
+        *v -= v_step;
+        if (*v < v_min)
+            *v = v_min;
+        else
+            changed = true;
+    }
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+    ImGui::SetNextItemWidth(slider_width);
+    if (SliderStepScalar("##SliderFloat", ImGuiDataType_Float, v, &v_min, &v_max, &v_step, format, flags)) {
+        changed = true;
+    }
+    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+    if (ImGui::Button(ICON_FA_ANGLE_RIGHT)) {
+        *v += v_step;
+        if (*v > v_max)
+            *v = v_max;
+        else
+            changed = true;
+    }
+    ImGui::PopID();
+    return changed;
 }
 
 }
