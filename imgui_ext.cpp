@@ -788,6 +788,29 @@ bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags, co
 }
 
 
+bool BeginStatusBar()
+{
+    ImGuiViewportP* viewport = (ImGuiViewportP*)(void*)ImGui::GetMainViewport();
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+    float height = ImGui::GetFrameHeight();
+
+    bool is_open = ImGui::BeginViewportSideBar("##MainStatusBar", viewport, ImGuiDir_Down, height, window_flags);
+
+    if (is_open)
+        ImGui::BeginMenuBar();
+    else
+        ImGui::End();
+    return is_open;
+}
+
+void EndStatusBar()
+{
+    ImGui::EndMenuBar();
+
+    ImGui::End();
+}
+
+
 bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
