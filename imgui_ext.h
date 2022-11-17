@@ -276,6 +276,9 @@ IMGUI_API bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags f
 IMGUI_API bool ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
 IMGUI_API bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 
+IMGUI_API bool BeginStatusBar();                                                 // create and append to a full screen status-bar.
+IMGUI_API void EndStatusBar();                                                   // only call EndStatusBar() if BeginStatusBar() returns true!
+
 // custom ones
 IMGUI_API bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool InputFloatForced(const char* label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
