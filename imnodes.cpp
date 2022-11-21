@@ -1780,7 +1780,7 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
     if (node_hovered)
     {
         GImNodes->HoveredNodeIdx = node_idx;
-        if (GImNodes->LeftMouseClicked && ImGui::IsKeyDown(ImGuiKey_ModCtrl))
+        if (GImNodes->LeftMouseClicked && ImGui::IsKeyDown(ImGuiMod_Ctrl))
         {
             BeginLinkCreation(editor, node_idx);
             //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
