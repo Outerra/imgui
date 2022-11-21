@@ -1772,6 +1772,7 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
 {
     const ImNodeData& node = editor.Nodes.Pool[node_idx];
     ImGui::SetCursorPos(CalcNodeOrigin(editor, node) + editor.Panning);
+    ImGui::Dummy(node.Rect.GetSize());
 
     const bool node_hovered =
         GImNodes->HoveredNodeIdx == node_idx &&
@@ -2712,6 +2713,7 @@ void EndNode()
     ImNodesEditorContext& editor = EditorContextGet();
 
     // The node's rectangle depends on the ImGui UI group size.
+    ImGui::Dummy(ImVec2(0, 0));
     ImGui::EndGroup();
     ImGui::PopID();
 
