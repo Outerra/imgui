@@ -485,7 +485,6 @@ void DrawListActivateNodeBackground(const int node_idx)
     // * EditorContextMoveToNode
     // * SetNodeScreenSpacePos
     // * SetNodeGridSpacePos
-    // * SetNodeDraggable
     // after the BeginNode/EndNode function calls?
     assert(submission_idx != -1);
     const int background_channel_idx = DrawListSubmissionIdxToBackgroundChannelIdx(submission_idx);
@@ -925,6 +924,7 @@ void TranslateSelectedNodes(ImNodesEditorContext& editor)
             if (node.Draggable)
             {
                 node.Origin += io.MouseDelta;
+                editor.NodesMoving |= io.MouseDelta.x != 0.0f && io.MouseDelta.y != 0.0f;
             }
         }
     }
@@ -1777,6 +1777,7 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
     const bool node_hovered =
         GImNodes->HoveredNodeIdx == node_idx &&
         editor.ClickInteraction.Type != ImNodesClickInteractionType_BoxSelection;
+    const bool node_selected = editor.SelectedNodeIndices.contains(node_idx);
 
     if (node_hovered)
     {
@@ -1795,7 +1796,7 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
     ImU32 titlebar_background = node.ColorStyle.Titlebar;
     float border_thickness = node.LayoutStyle.BorderThickness;
 
-    if (editor.SelectedNodeIndices.contains(node_idx))
+    if (node_selected)
     {
         node_background = node.ColorStyle.BackgroundSelected;
         node_outline = node.ColorStyle.OutlineSelected;
@@ -1825,6 +1826,18 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
                 titlebar_background,
                 node.LayoutStyle.CornerRounding,
                 ImDrawFlags_RoundCornersTop);
+        }
+
+        if (node.Active)
+        {
+            float thickness = node.LayoutStyle.BorderThickness + 1.0f;
+            GImNodes->CanvasDrawList->AddRect(
+                node.Rect.Min + ImVec2(thickness, thickness),
+                node.Rect.Max - ImVec2(thickness, thickness),
+                node.ColorStyle.OutlineActive,
+                ImMax(0.0f, node.LayoutStyle.CornerRounding - 1.0f),
+                ImDrawFlags_RoundCornersAll,
+                thickness);
         }
 
         if ((GImNodes->Style.Flags & ImNodesStyleFlags_NodeOutline) != 0)
@@ -1882,15 +1895,7 @@ void DrawLink(ImNodesEditorContext& editor, const int link_idx)
         return;
     }
 
-    ImU32 link_color = link.ColorStyle.Base;
-    if (editor.SelectedLinkIndices.contains(link_idx))
-    {
-        link_color = link.ColorStyle.Selected;
-    }
-    else if (link_hovered)
-    {
-        link_color = link.ColorStyle.Hovered;
-    }
+    const bool link_selected = editor.SelectedLinkIndices.contains(link_idx);
 
     if (GImNodes->Flags & ImNodesContextFlags_NodeLinks) {
         const ImNodeData& start_node = editor.Nodes.Pool[link.StartIdx];
@@ -1906,9 +1911,22 @@ void DrawLink(ImNodesEditorContext& editor, const int link_idx)
         const ImVec2 side_off = line_side_dir * offset;
         const LineSegment seg = { seg_center.P0 + side_off, seg_center.P1 + side_off };
 
-        GImNodes->CanvasDrawList->AddLine(seg.P0, seg.P1, link_color, GImNodes->Style.LinkThickness);
+        ImU32 base_color = link.Active ? link.ColorStyle.Active : link.ColorStyle.Base;
+
+        if (link_selected)
+            GImNodes->CanvasDrawList->AddLine(seg.P0, seg.P1, link.ColorStyle.Selected, GImNodes->Style.LinkThickness + 4);
+        else if (link_hovered)
+            GImNodes->CanvasDrawList->AddLine(seg.P0, seg.P1, link.ColorStyle.Hovered, GImNodes->Style.LinkThickness + 2);
+        GImNodes->CanvasDrawList->AddLine(seg.P0, seg.P1, base_color, GImNodes->Style.LinkThickness);
+
         ImVec2 arrow_tip = (seg.P0 + seg.P1) * 0.5f + line_dir * offset * 2.0f;
-        GImNodes->CanvasDrawList->AddLine(arrow_tip, arrow_tip - line_dir * offset * 4.0f + line_side_dir * offset * 2.0f, link_color, GImNodes->Style.LinkThickness);
+        ImVec2 arrow_base = arrow_tip - line_dir * offset * 4.0f + line_side_dir * offset * 2.0f;
+        if (link_selected)
+            GImNodes->CanvasDrawList->AddLine(arrow_tip, arrow_base, link.ColorStyle.Selected, GImNodes->Style.LinkThickness + 4);
+        else if (link_hovered)
+            GImNodes->CanvasDrawList->AddLine(arrow_tip, arrow_base, link.ColorStyle.Hovered, GImNodes->Style.LinkThickness + 2);
+
+        GImNodes->CanvasDrawList->AddLine(arrow_tip, arrow_base, base_color, GImNodes->Style.LinkThickness);
     }
     else {
         const ImPinData& start_pin = editor.Pins.Pool[link.StartIdx];
@@ -1921,7 +1939,7 @@ void DrawLink(ImNodesEditorContext& editor, const int link_idx)
             cubic_bezier.P1,
             cubic_bezier.P2,
             cubic_bezier.P3,
-            link_color,
+            link.ColorStyle.Base,/////////////////////////////////////unhandled hover / selected
             GImNodes->Style.LinkThickness,
             cubic_bezier.NumSegments);
     }
@@ -2360,6 +2378,7 @@ void StyleColorsDark()
     GImNodes->Style.Colors[ImNodesCol_NodeOutline] = IM_COL32(100, 100, 100, 255);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineHovered] = IM_COL32(66, 150, 250, 255);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineSelected] = IM_COL32(66, 150, 250, 255);
+    GImNodes->Style.Colors[ImNodesCol_NodeOutlineActive] = IM_COL32(255, 255, 0, 255);
     // title bar colors match ImGui's titlebg colors
     GImNodes->Style.Colors[ImNodesCol_TitleBar] = IM_COL32(41, 74, 122, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBarHovered] = IM_COL32(66, 150, 250, 255);
@@ -2368,6 +2387,7 @@ void StyleColorsDark()
     GImNodes->Style.Colors[ImNodesCol_Link] = IM_COL32(192, 192, 192, 200);
     GImNodes->Style.Colors[ImNodesCol_LinkHovered] = IM_COL32(66, 150, 250, 255);
     GImNodes->Style.Colors[ImNodesCol_LinkSelected] = IM_COL32(66, 150, 250, 255);
+    GImNodes->Style.Colors[ImNodesCol_LinkActive] = IM_COL32(255, 255, 0, 255);
     // pin colors match ImGui's button colors
     GImNodes->Style.Colors[ImNodesCol_Pin] = IM_COL32(53, 150, 250, 180);
     GImNodes->Style.Colors[ImNodesCol_PinHovered] = IM_COL32(53, 150, 250, 255);
@@ -2401,12 +2421,14 @@ void StyleColorsClassic()
     GImNodes->Style.Colors[ImNodesCol_NodeOutline] = IM_COL32(100, 100, 100, 255);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineHovered] = IM_COL32(105, 99, 204, 153);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineSelected] = IM_COL32(105, 99, 204, 153);
+    GImNodes->Style.Colors[ImNodesCol_NodeOutlineActive] = IM_COL32(255, 255, 0, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBar] = IM_COL32(69, 69, 138, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBarHovered] = IM_COL32(82, 82, 161, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBarSelected] = IM_COL32(82, 82, 161, 255);
     GImNodes->Style.Colors[ImNodesCol_Link] = IM_COL32(255, 255, 255, 100);
     GImNodes->Style.Colors[ImNodesCol_LinkHovered] = IM_COL32(105, 99, 204, 153);
     GImNodes->Style.Colors[ImNodesCol_LinkSelected] = IM_COL32(105, 99, 204, 153);
+    GImNodes->Style.Colors[ImNodesCol_LinkActive] = IM_COL32(255, 255, 0, 255);
     GImNodes->Style.Colors[ImNodesCol_Pin] = IM_COL32(89, 102, 156, 170);
     GImNodes->Style.Colors[ImNodesCol_PinHovered] = IM_COL32(102, 122, 179, 200);
     GImNodes->Style.Colors[ImNodesCol_BoxSelector] = IM_COL32(82, 82, 161, 100);
@@ -2437,6 +2459,7 @@ void StyleColorsLight()
     GImNodes->Style.Colors[ImNodesCol_NodeOutline] = IM_COL32(100, 100, 100, 255);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineHovered] = IM_COL32(66, 150, 250, 242);
     GImNodes->Style.Colors[ImNodesCol_NodeOutlineSelected] = IM_COL32(66, 150, 250, 242);
+    GImNodes->Style.Colors[ImNodesCol_NodeOutlineActive] = IM_COL32(255, 255, 0, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBar] = IM_COL32(248, 248, 248, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBarHovered] = IM_COL32(209, 209, 209, 255);
     GImNodes->Style.Colors[ImNodesCol_TitleBarSelected] = IM_COL32(209, 209, 209, 255);
@@ -2445,6 +2468,7 @@ void StyleColorsLight()
     // original imgui values: 117, 138, 204
     GImNodes->Style.Colors[ImNodesCol_LinkHovered] = IM_COL32(66, 150, 250, 242);
     GImNodes->Style.Colors[ImNodesCol_LinkSelected] = IM_COL32(66, 150, 250, 242);
+    GImNodes->Style.Colors[ImNodesCol_LinkActive] = IM_COL32(255, 255, 0, 255);
     // original imgui values: 66, 150, 250
     GImNodes->Style.Colors[ImNodesCol_Pin] = IM_COL32(66, 150, 250, 160);
     GImNodes->Style.Colors[ImNodesCol_PinHovered] = IM_COL32(66, 150, 250, 255);
@@ -2614,6 +2638,8 @@ void EndNodeEditor()
         MiniMapUpdate();
     }
 
+    if (!GImNodes->LeftMouseDragging && !GImNodes->LeftMouseReleased)
+        editor.NodesMoving = false;
     ClickInteractionUpdate(editor);
 
     // At this point, draw commands have been issued for all nodes (and pins). Update the node pool
@@ -2667,7 +2693,7 @@ void MiniMap(
     // of the state for the mini map in GImNodes for the actual drawing/updating
 }
 
-void BeginNode(const int node_id)
+void BeginNode(const int node_id, ImNodesNodeFlags flags)
 {
     // Remember to call BeginNodeEditor before calling BeginNode
     //assert(GImNodes->CurrentScope == ImNodesScope_Editor);
@@ -2679,12 +2705,16 @@ void BeginNode(const int node_id)
 
     ImNodeData& node = editor.Nodes.Pool[node_idx];
     node.ParentNodeIdx = GImNodes->CurrentNodeIdx;
+    node.Draggable = (flags & ImNodesNodeFlags_Undraggable) == 0;
+    node.Active = (flags & ImNodesNodeFlags_Active) != 0;
+
     node.ColorStyle.Background = GImNodes->Style.Colors[ImNodesCol_NodeBackground];
     node.ColorStyle.BackgroundHovered = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundHovered];
     node.ColorStyle.BackgroundSelected = GImNodes->Style.Colors[ImNodesCol_NodeBackgroundSelected];
     node.ColorStyle.Outline = GImNodes->Style.Colors[ImNodesCol_NodeOutline];
     node.ColorStyle.OutlineHovered = GImNodes->Style.Colors[ImNodesCol_NodeOutlineHovered];
     node.ColorStyle.OutlineSelected = GImNodes->Style.Colors[ImNodesCol_NodeOutlineSelected];
+    node.ColorStyle.OutlineActive = GImNodes->Style.Colors[ImNodesCol_NodeOutlineActive];
     node.ColorStyle.Titlebar = GImNodes->Style.Colors[ImNodesCol_TitleBar];
     node.ColorStyle.TitlebarHovered = GImNodes->Style.Colors[ImNodesCol_TitleBarHovered];
     node.ColorStyle.TitlebarSelected = GImNodes->Style.Colors[ImNodesCol_TitleBarSelected];
@@ -2818,7 +2848,7 @@ void PopAttributeFlag()
     GImNodes->CurrentAttributeFlags = GImNodes->AttributeFlagStack.back();
 }
 
-void Link(const int id, const int start_attr_id, const int end_attr_id)
+void Link(const int id, const int start_attr_id, const int end_attr_id, ImNodesNodeFlags flags)
 {
     assert(GImNodes->CurrentScope == ImNodesScope_Editor);
     const bool use_node_links = GImNodes->Flags & ImNodesContextFlags_NodeLinks;
@@ -2834,9 +2864,11 @@ void Link(const int id, const int start_attr_id, const int end_attr_id)
         link.StartIdx = ObjectPoolFindOrCreateIndex(editor.Pins, start_attr_id);
         link.EndIdx = ObjectPoolFindOrCreateIndex(editor.Pins, end_attr_id);
     }
+    link.Active = (flags & ImNodesLinkFlags_Active) != 0;
     link.ColorStyle.Base = GImNodes->Style.Colors[ImNodesCol_Link];
     link.ColorStyle.Hovered = GImNodes->Style.Colors[ImNodesCol_LinkHovered];
     link.ColorStyle.Selected = GImNodes->Style.Colors[ImNodesCol_LinkSelected];
+    link.ColorStyle.Active = GImNodes->Style.Colors[ImNodesCol_LinkActive];
 
     // Check if this link was created by the current link event
     if ((editor.ClickInteraction.Type == ImNodesClickInteractionType_LinkCreation &&
@@ -2990,13 +3022,6 @@ void SetNodeGridSpacePos(const int node_id, const ImVec2& grid_pos, bool relativ
     node.Origin = grid_pos;
 }
 
-void SetNodeDraggable(const int node_id, const bool draggable)
-{
-    ImNodesEditorContext& editor = EditorContextGet();
-    ImNodeData&           node = ObjectPoolFindOrCreateObject(editor.Nodes, node_id);
-    node.Draggable = draggable;
-}
-
 ImVec2 GetNodeScreenSpacePos(const int node_id)
 {
     ImNodesEditorContext& editor = EditorContextGet();
@@ -3136,6 +3161,12 @@ void ClearLinkSelection()
 {
     ImNodesEditorContext& editor = EditorContextGet();
     editor.SelectedLinkIndices.clear();
+}
+
+bool AreSelectedNodesMoved()
+{
+    ImNodesEditorContext& editor = EditorContextGet();
+    return GImNodes->LeftMouseReleased && editor.NodesMoving;
 }
 
 bool IsAttributeActive()
