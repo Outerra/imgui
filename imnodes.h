@@ -7,6 +7,8 @@ typedef int ImNodesStyleVar;        // -> enum ImNodesStyleVar_
 typedef int ImNodesStyleFlags;      // -> enum ImNodesStyleFlags_
 typedef int ImNodesPinShape;        // -> enum ImNodesPinShape_
 typedef int ImNodesContextFlags;    // -> enum ImNodesContextFlags_
+typedef int ImNodesNodeFlags;       // -> enum ImNodesNodeFlags_
+typedef int ImNodesLinkFlags;       // -> enum ImNodesLinkFlags_
 typedef int ImNodesAttributeFlags;  // -> enum ImNodesAttributeFlags_
 typedef int ImNodesMiniMapLocation; // -> enum ImNodesMiniMapLocation_
 
@@ -18,12 +20,14 @@ enum ImNodesCol_
     ImNodesCol_NodeOutline,
     ImNodesCol_NodeOutlineHovered,
     ImNodesCol_NodeOutlineSelected,
+    ImNodesCol_NodeOutlineActive,
     ImNodesCol_TitleBar,
     ImNodesCol_TitleBarHovered,
     ImNodesCol_TitleBarSelected,
     ImNodesCol_Link,
     ImNodesCol_LinkHovered,
     ImNodesCol_LinkSelected,
+    ImNodesCol_LinkActive,
     ImNodesCol_Pin,
     ImNodesCol_PinHovered,
     ImNodesCol_BoxSelector,
@@ -82,6 +86,19 @@ enum ImNodesContextFlags_
 {
     ImNodesContextFlags_Default = 0, //use pins for node linking
     ImNodesContextFlags_NodeLinks = 1 << 0, // use linking directly between nodes
+};
+
+enum ImNodesNodeFlags_
+{
+    ImNodesNodeFlags_None           = 0,
+    ImNodesNodeFlags_Undraggable    = 1 << 0, //cannot be moved by mouse drag
+    ImNodesNodeFlags_Active         = 1 << 1, //use visuals of active node
+};
+
+enum ImNodesLinkFlags_
+{
+    ImNodesLinkFlags_None       = 0,
+    ImNodesLinkFlags_Active     = 1 << 0, //use visuals of active node
 };
 
 // This enum controls the way the attribute pins behave.
@@ -251,7 +268,7 @@ void PushStyleVar(ImNodesStyleVar style_item, float value);
 void PopStyleVar(int count = 1);
 
 // id can be any positive or negative integer, but INT_MIN is currently reserved for internal use.
-void BeginNode(int id);
+void BeginNode(int id, ImNodesNodeFlags flags = 0);
 void EndNode();
 
 ImVec2 GetNodeDimensions(int id);
@@ -290,10 +307,7 @@ void PopAttributeFlag();
 // Render a link between attributes.
 // The attributes ids used here must match the ids used in Begin(Input|Output)Attribute function
 // calls. The order of start_attr and end_attr doesn't make a difference for rendering the link.
-void Link(int id, int start_attribute_id, int end_attribute_id);
-
-// Enable or disable the ability to click and drag a specific node.
-void SetNodeDraggable(int node_id, const bool draggable);
+void Link(int id, int start_attribute_id, int end_attribute_id, ImNodesLinkFlags flags = 0);
 
 // The node's position can be expressed in three coordinate systems:
 // * screen space coordinates, -- the origin is the upper left corner of the window.
@@ -338,6 +352,9 @@ void SetSelectedLinks(int* link_ids, int count);
 // Clears the list of selected nodes/links. Useful if you want to delete a selected node or link.
 void ClearNodeSelection();
 void ClearLinkSelection();
+
+// were nodes moved by mouse drag, returns true in frame after mouse release
+bool AreSelectedNodesMoved();
 
 // Was the previous attribute active? This will continuously return true while the left mouse button
 // is being pressed over the UI content of the attribute.

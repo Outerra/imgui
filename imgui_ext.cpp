@@ -1223,7 +1223,7 @@ bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, 
     return value_changed;
 }
 
-bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format, ImGuiSliderFlags flags)
+bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
 
@@ -1233,27 +1233,42 @@ bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max
     float width = ImGui::GetContentRegionAvail().x;
     float slider_width = width - (style.ItemInnerSpacing.x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
     if (ImGui::Button(ICON_FA_ANGLE_LEFT)) {
-        *v -= v_step;
-        if (*v < v_min)
-            *v = v_min;
-        else
+        if (ImGui::DataTypeCompare(data_type, p_data, p_min) > 0) {
+            ImGui::DataTypeApplyOp(data_type, '-', p_data, p_data, p_step);
+            ImGui::DataTypeClamp(data_type, p_data, p_min, p_max);
             changed = true;
+        }
     }
     ImGui::SameLine(0, style.ItemInnerSpacing.x);
     ImGui::SetNextItemWidth(slider_width);
-    if (SliderStepScalar("##SliderFloat", ImGuiDataType_Float, v, &v_min, &v_max, &v_step, format, flags)) {
+    if (SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags)) {
         changed = true;
     }
     ImGui::SameLine(0, style.ItemInnerSpacing.x);
     if (ImGui::Button(ICON_FA_ANGLE_RIGHT)) {
-        *v += v_step;
-        if (*v > v_max)
-            *v = v_max;
-        else
+        if (ImGui::DataTypeCompare(data_type, p_data, p_max) < 0) {
+            ImGui::DataTypeApplyOp(data_type, '+', p_data, p_data, p_step);
+            ImGui::DataTypeClamp(data_type, p_data, p_min, p_max);
             changed = true;
+        }
     }
     ImGui::PopID();
     return changed;
+}
+
+bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format, ImGuiSliderFlags flags)
+{
+    return SliderWithArrows(label, ImGuiDataType_Float, v, &v_min, &v_max, &v_step, format, flags);
+}
+
+bool SliderWithArrowsInt(const char* label, int* v, int v_min, int v_max, int v_step, const char* format, ImGuiSliderFlags flags)
+{
+    return SliderWithArrows(label, ImGuiDataType_S32, v, &v_min, &v_max, &v_step, format, flags);
+}
+
+bool SliderWithArrowsUInt(const char* label, uint* v, uint v_min, uint v_max, uint v_step, const char* format, ImGuiSliderFlags flags)
+{
+    return SliderWithArrows(label, ImGuiDataType_U32, v, &v_min, &v_max, &v_step, format, flags);
 }
 
 }

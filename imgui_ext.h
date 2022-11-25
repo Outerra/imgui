@@ -311,7 +311,10 @@ IMGUI_API bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInpu
 IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsInt(const char* label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsUInt(const char* label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiSliderFlags flags = 0);
 
 }
 

@@ -88,14 +88,12 @@ struct ImObjectPool
     ImVector<bool> InUse;
     ImVector<int>  FreeList;
     ImGuiStorage   IdMap;
-
-    ImObjectPool() : Pool(), InUse(), FreeList(), IdMap() {}
 };
 
 // Emulates std::optional<int> using the sentinel value `INVALID_INDEX`.
 struct ImOptionalIndex
 {
-    ImOptionalIndex() : _Index(INVALID_INDEX) {}
+    ImOptionalIndex() = default;
     ImOptionalIndex(const int value) : _Index(value) {}
 
     // Observers
@@ -129,20 +127,20 @@ struct ImOptionalIndex
     static const int INVALID_INDEX = -1;
 
 private:
-    int _Index;
+    int _Index = INVALID_INDEX;
 };
 
 struct ImNodeData
 {
     int    Id;
-    int    ParentNodeIdx;
-    ImVec2 Origin; // The node origin is in editor space
+    int    ParentNodeIdx = INT_MAX;
+    ImVec2 Origin = { 100.0f, 100.0f }; // The node origin is in editor space
     ImRect TitleBarContentRect;
-    ImRect Rect;
+    ImRect Rect = { ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f) };
 
     struct
     {
-        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, OutlineHovered, OutlineSelected, Titlebar, TitlebarHovered,
+        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, OutlineHovered, OutlineSelected, OutlineActive, Titlebar, TitlebarHovered,
             TitlebarSelected;
     } ColorStyle;
 
@@ -154,16 +152,10 @@ struct ImNodeData
     } LayoutStyle;
 
     ImVector<int> PinIndices;
-    bool          Draggable;
+    bool          Draggable = true;
+    bool          Active = false;
 
-    ImNodeData(const int node_id)
-        : Id(node_id), ParentNodeIdx(INT_MAX), Origin(100.0f, 100.0f), TitleBarContentRect(),
-          Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
-          Draggable(true)
-    {
-    }
-
-    ~ImNodeData() { Id = INT_MIN; }
+    ImNodeData(const int node_id) : Id(node_id) {}
 };
 
 struct ImPinData
@@ -171,40 +163,36 @@ struct ImPinData
     int                  Id;
     int                  ParentNodeIdx;
     ImRect               AttributeRect;
-    ImNodesAttributeType Type;
-    ImNodesPinShape      Shape;
+    ImNodesAttributeType Type = ImNodesAttributeType_None;
+    ImNodesPinShape      Shape = ImNodesPinShape_CircleFilled;
     ImVec2               Pos; // screen-space coordinates
-    int                  Flags;
+    int                  Flags = ImNodesAttributeFlags_None;
 
     struct
     {
         ImU32 Background, Hovered;
     } ColorStyle;
 
-    ImPinData(const int pin_id)
-        : Id(pin_id), ParentNodeIdx(), AttributeRect(), Type(ImNodesAttributeType_None),
-          Shape(ImNodesPinShape_CircleFilled), Pos(), Flags(ImNodesAttributeFlags_None),
-          ColorStyle()
-    {
-    }
+    ImPinData(const int pin_id) : Id(pin_id) {}
 };
 
 struct ImLinkData
 {
     int Id;
     int StartIdx, EndIdx;
+    bool Active = false;
 
     struct
     {
-        ImU32 Base, Hovered, Selected;
+        ImU32 Base, Hovered, Selected, Active;
     } ColorStyle;
 
-    ImLinkData(const int link_id) : Id(link_id), StartIdx(), EndIdx(), ColorStyle() {}
+    ImLinkData(const int link_id) : Id(link_id) {}
 };
 
 struct ImClickInteractionState
 {
-    ImNodesClickInteractionType Type;
+    ImNodesClickInteractionType Type = ImNodesClickInteractionType_None;
 
     struct
     {
@@ -217,8 +205,6 @@ struct ImClickInteractionState
     {
         ImRect Rect;
     } BoxSelector;
-
-    ImClickInteractionState() : Type(ImNodesClickInteractionType_None) {}
 };
 
 struct ImNodesColElement
@@ -251,18 +237,13 @@ struct ImNodesEditorContext
     ImVector<int> NodeDepthOrder;
 
     // ui related fields
-    ImVec2 Panning;
+    ImVec2 Panning = { 0.f, 0.f };
 
     ImVector<int> SelectedNodeIndices;
     ImVector<int> SelectedLinkIndices;
 
     ImClickInteractionState ClickInteraction;
-
-    ImNodesEditorContext()
-        : Nodes(), Pins(), Links(), Panning(0.f, 0.f), SelectedNodeIndices(), SelectedLinkIndices(),
-          ClickInteraction()
-    {
-    }
+    bool NodesMoving = false;
 };
 
 struct ImNodesContext
