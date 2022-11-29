@@ -953,6 +953,10 @@ void EndListBox()
 
 bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros)
 {
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    if (window->SkipItems)
+        return false;
+
     int items_count = 0;
     const char* p = items_separated_by_zeros;
     while (*p) {
@@ -962,10 +966,6 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     p = items_separated_by_zeros;
 
     ImGuiEx::Label(label);
-
-    ImGuiWindow* window = ImGui::GetCurrentWindow();
-    if (window->SkipItems)
-        return false;
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;

@@ -586,7 +586,7 @@ ImVec2 GetScreenSpacePinCoordinates(const ImNodesEditorContext& editor, const Im
 bool MouseInCanvas()
 {
     // This flag should be true either when hovering or clicking something in the canvas.
-    const bool is_window_hovered_or_focused = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) || ImGui::IsWindowFocused(ImGuiHoveredFlags_ChildWindows);
+    const bool is_window_hovered_or_focused = ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_NoPopupHierarchy) || ImGui::IsWindowFocused(ImGuiHoveredFlags_ChildWindows | ImGuiHoveredFlags_NoPopupHierarchy);
 
     return is_window_hovered_or_focused &&
            GImNodes->CanvasRectScreenSpace.Contains(ImGui::GetMousePos());
@@ -1779,18 +1779,6 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
         editor.ClickInteraction.Type != ImNodesClickInteractionType_BoxSelection;
     const bool node_selected = editor.SelectedNodeIndices.contains(node_idx);
 
-    if (node_hovered)
-    {
-        GImNodes->HoveredNodeIdx = node_idx;
-        if (GImNodes->LeftMouseClicked && ImGui::IsKeyDown(ImGuiMod_Ctrl))
-        {
-            BeginLinkCreation(editor, node_idx);
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            //BeginLinkInteraction(editor, node_idx);/////////////////////////////////////////////////////////////////////////////
-            //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        }
-    }
-
     ImU32 node_background = node.ColorStyle.Background;
     ImU32 node_outline = node.ColorStyle.Outline;
     ImU32 titlebar_background = node.ColorStyle.Titlebar;
@@ -1861,9 +1849,12 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
     {
         GImNodes->HoveredNodeIdx = node_idx;
         const bool node_free_to_move = GImNodes->InteractiveNodeIdx != node_idx;
-        if (GImNodes->LeftMouseClicked && node_free_to_move)
+        if (GImNodes->LeftMouseClicked)
         {
-            BeginNodeSelection(editor, node_idx);
+            if (ImGui::IsKeyDown(ImGuiMod_Ctrl))
+                BeginLinkCreation(editor, node_idx);
+            else if (node_free_to_move)
+                BeginNodeSelection(editor, node_idx);
         }
     }
 }
