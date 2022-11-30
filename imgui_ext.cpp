@@ -328,7 +328,7 @@ void Label(const char* label)
     ImRect textRect;
     textRect.Min = ImGui::GetCursorScreenPos();
     textRect.Max = textRect.Min;
-    textRect.Max.x += fullWidth - itemWidth - style.ItemSpacing.x;;
+    textRect.Max.x += fullWidth - itemWidth - style.ItemSpacing.x;
     textRect.Max.y += textSize.y;
 
     ImGui::SetCursorScreenPos(textRect.Min);
@@ -1110,6 +1110,10 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
     {
         buf->get_buf(data->BufSize - 1);
     }
+    if ((data->EventFlag & ImGuiInputTextFlags_CallbackEdit) != 0)
+    {
+        buf->correct_size();
+    }
 
     return 0;
 }
@@ -1127,7 +1131,7 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags
         *buf.ptr_ref() = 0;
     }
 
-    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit, &charstr_input_text_callback, &buf);
     ImGui::PopID();
     return result;
 }
