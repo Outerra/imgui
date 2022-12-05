@@ -207,7 +207,6 @@ IMGUI_API void             DockChangesFinish(ImGuiID node_id);
 // void  (*ApplyAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
 // void  (*WriteAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* out_buf);
 IMGUI_API void RegisterSettingsHandler(
-    bool overwrite_if_exists,
     ImGuiContext* context,
     const char* name,
     void* ClearAllFn,
@@ -215,14 +214,8 @@ IMGUI_API void RegisterSettingsHandler(
     void* ReadOpenFn,
     void* ReadLineFn,
     void* ApplyAllFn,
-    void* WriteAllFn,
-    void* UserData
+    void* WriteAllFn
 );
-
-IMGUI_API void* GetSettingsHandlerUserData(
-    void* SettingsHandler
-);
-
 
 IMGUI_API void ItemSeparator();
 
