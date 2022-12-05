@@ -276,9 +276,7 @@ void DockChangesFinish(ImGuiID node_id)
     ImGui::DockBuilderFinish(node_id);
 }
 
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-IMGUI_API void RegisterSettingsHandler(bool overwrite_if_exists, ImGuiContext* context, const char* name, void* ClearAllFn, void* ReadInitFn, void* ReadOpenFn, void* ReadLineFn, void* ApplyAllFn, void* WriteAllFn, void* UserData)
+IMGUI_API void RegisterSettingsHandler(ImGuiContext* context, const char* name, void* ClearAllFn, void* ReadInitFn, void* ReadOpenFn, void* ReadLineFn, void* ApplyAllFn, void* WriteAllFn)
 {
     using ClearAllFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
     using ReadInitFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
@@ -296,32 +294,8 @@ IMGUI_API void RegisterSettingsHandler(bool overwrite_if_exists, ImGuiContext* c
     new_handler.ReadLineFn = reinterpret_cast<ReadLineFnPtr>(ReadLineFn);
     new_handler.ApplyAllFn = reinterpret_cast<ApplyAllFnPtr>(ApplyAllFn);
     new_handler.WriteAllFn = reinterpret_cast<WriteAllFnPtr>(WriteAllFn);
-    new_handler.UserData = UserData;
 
-    int existing_index = 0;
-    for (; existing_index < context->SettingsHandlers.size(); existing_index++)
-    {
-        if (strcmp(new_handler.TypeName, context->SettingsHandlers[existing_index].TypeName) == 0)
-        {
-            break;
-        }
-    }
-
-    if (existing_index < context->SettingsHandlers.size())
-    {
-        context->SettingsHandlers[existing_index] = new_handler;
-    }
-    else
-    {
-        context->SettingsHandlers.push_back(new_handler);
-    }
-}
-
-//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-IMGUI_API void* ImGui::GetSettingsHandlerUserData(void* SettingsHandler)
-{
-    return static_cast<ImGuiSettingsHandler*>(SettingsHandler)->UserData;
+    context->SettingsHandlers.push_back(new_handler);
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
@@ -1136,10 +1110,6 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
     {
         buf->get_buf(data->BufSize - 1);
     }
-    if ((data->EventFlag & ImGuiInputTextFlags_CallbackEdit) != 0)
-    {
-        buf->correct_size();
-    }
 
     return 0;
 }
@@ -1157,7 +1127,8 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags
         *buf.ptr_ref() = 0;
     }
 
-    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit, &charstr_input_text_callback, &buf);
+    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    if (result) buf.correct_size();
     ImGui::PopID();
     return result;
 }
