@@ -1101,6 +1101,40 @@ bool ActiveButton(const char* label, bool active, const ImVec2& size_arg)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
+void TextFramed(const char* label, const char* fmt, ...)
+{
+    const ImGuiStyle& style = ImGui::GetStyle();
+
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+    ImVec2 bb_size = ImGui::CalcItemSize(ImVec2(0, 0), ImGui::CalcItemWidth(), label_size.y + style.FramePadding.y * 2.0f);
+    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + bb_size);
+
+    const ImGuiID id = ImGui::GetCurrentWindow()->GetID("child");
+    ImGui::ItemSize(bb_size, style.FramePadding.y);
+    if (ImGui::ItemAdd(frame_bb, id, &frame_bb, ImGuiItemFlags_Inputable))
+    {
+        ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, ImGui::GetColorU32(ImGuiCol_FrameBg), true, style.FrameRounding);
+        //ImGui::GetCurrentWindow()->DC.CursorPos += style.FramePadding;
+
+        va_list args;
+        va_start(args, fmt);
+        const char* text, * text_end;
+        ImFormatStringToTempBufferV(&text, &text_end, fmt, args);
+        if (text != text_end)
+            ImGui::RenderText(frame_bb.Min + style.FramePadding, text);
+
+        va_end(args);
+    }
+
+    ImGui::PopID();
+}
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
 static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 {
 
@@ -1116,7 +1150,7 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags flags)
+bool InputTextCharstr(const char* label, coid::charstr& buf, size_t max_size, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1127,13 +1161,14 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, ImGuiInputTextFlags
         *buf.ptr_ref() = 0;
     }
 
-    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    size_t buf_size = max_size > 0 ? ImMin<size_t>(max_size, buf.len() + 1) : buf.len() + 1;
+    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf_size, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
     if (result) buf.correct_size();
     ImGui::PopID();
     return result;
 }
 
-bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, ImGuiInputTextFlags flags)
+bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, size_t max_size, ImGuiInputTextFlags flags)
 {
     if (buf.is_empty())
     {
@@ -1141,7 +1176,8 @@ bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr
         *buf.ptr_ref() = 0;
     }
 
-    return ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.len() + 1, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    size_t buf_size = max_size > 0 ? ImMin<size_t>(max_size, buf.len() + 1) : buf.len() + 1;
+    return ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf_size, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
 }
 
 
