@@ -276,7 +276,9 @@ void DockChangesFinish(ImGuiID node_id)
     ImGui::DockBuilderFinish(node_id);
 }
 
-IMGUI_API void RegisterSettingsHandler(ImGuiContext* context, const char* name, void* ClearAllFn, void* ReadInitFn, void* ReadOpenFn, void* ReadLineFn, void* ApplyAllFn, void* WriteAllFn)
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+IMGUI_API void RegisterSettingsHandler(bool overwrite_if_exists, ImGuiContext* context, const char* name, void* ClearAllFn, void* ReadInitFn, void* ReadOpenFn, void* ReadLineFn, void* ApplyAllFn, void* WriteAllFn, void* UserData)
 {
     using ClearAllFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
     using ReadInitFnPtr = void(*)(ImGuiContext * ctx, ImGuiSettingsHandler * handler);
@@ -294,8 +296,32 @@ IMGUI_API void RegisterSettingsHandler(ImGuiContext* context, const char* name, 
     new_handler.ReadLineFn = reinterpret_cast<ReadLineFnPtr>(ReadLineFn);
     new_handler.ApplyAllFn = reinterpret_cast<ApplyAllFnPtr>(ApplyAllFn);
     new_handler.WriteAllFn = reinterpret_cast<WriteAllFnPtr>(WriteAllFn);
+    new_handler.UserData = UserData;
 
-    context->SettingsHandlers.push_back(new_handler);
+    int existing_index = 0;
+    for (; existing_index < context->SettingsHandlers.size(); existing_index++)
+    {
+        if (strcmp(new_handler.TypeName, context->SettingsHandlers[existing_index].TypeName) == 0)
+        {
+            break;
+        }
+    }
+
+    if (existing_index < context->SettingsHandlers.size())
+    {
+        context->SettingsHandlers[existing_index] = new_handler;
+    }
+    else
+    {
+        context->SettingsHandlers.push_back(new_handler);
+    }
+}
+
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+IMGUI_API void* ImGui::GetSettingsHandlerUserData(void* SettingsHandler)
+{
+    return static_cast<ImGuiSettingsHandler*>(SettingsHandler)->UserData;
 }
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=

@@ -175,24 +175,24 @@ IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
 
 ///////////////////////////////////////////////////////////////////////////////
 
-IMGUI_API void             DockWindow(const char* window_name, ImGuiID node_id);
-IMGUI_API bool             IsWindowDocked(const char* window_name);
-IMGUI_API ImGuiID          GetWindowDockID(const char* window_name);
+//IMGUI_API void             DockWindow(const char* window_name, ImGuiID node_id);
+//IMGUI_API bool             IsWindowDocked(const char* window_name);
+//IMGUI_API ImGuiID          GetWindowDockID(const char* window_name);
 //IMGUI_API ImGuiDockNode* DockBuilderGetNode(ImGuiID node_id);
 //inline ImGuiDockNode*    DockBuilderGetCentralNode(ImGuiID node_id) { ImGuiDockNode* node = DockBuilderGetNode(node_id); if (!node) return NULL; return DockNodeGetRootNode(node)->CentralNode; }
 IMGUI_API ImVec2           DockSpaceGetCentralNodeMin(ImGuiID dockspace_id);
 IMGUI_API ImVec2           DockSpaceGetCentralNodeMax(ImGuiID dockspace_id);
-IMGUI_API ImGuiID          AddDockNode(ImGuiID node_id = 0, ImGuiDockNodeFlags flags = 0);
+//IMGUI_API ImGuiID          AddDockNode(ImGuiID node_id = 0, ImGuiDockNodeFlags flags = 0);
 //IMGUI_API void           DockBuilderRemoveNode(ImGuiID node_id);                 // Remove node and all its child, undock all windows
 //IMGUI_API void           DockBuilderRemoveNodeDockedWindows(ImGuiID node_id, bool clear_settings_refs = true);
 //IMGUI_API void           DockBuilderRemoveNodeChildNodes(ImGuiID node_id);       // Remove all split/hierarchy. All remaining docked windows will be re-docked to the remaining root node (node_id).
-IMGUI_API void             SetDockNodePos(ImGuiID node_id, ImVec2 pos);
-IMGUI_API void             SetDockNodeSize(ImGuiID node_id, ImVec2 size);
-IMGUI_API ImGuiID          SplitDockNode(ImGuiID node_id, ImGuiDir split_dir, float size_ratio_for_node_at_dir, ImGuiID* out_id_at_dir, ImGuiID* out_id_at_opposite_dir); // Create 2 child nodes in this parent node.
+//IMGUI_API void             SetDockNodePos(ImGuiID node_id, ImVec2 pos);
+//IMGUI_API void             SetDockNodeSize(ImGuiID node_id, ImVec2 size);
+//IMGUI_API ImGuiID          SplitDockNode(ImGuiID node_id, ImGuiDir split_dir, float size_ratio_for_node_at_dir, ImGuiID* out_id_at_dir, ImGuiID* out_id_at_opposite_dir); // Create 2 child nodes in this parent node.
 //IMGUI_API void           DockBuilderCopyDockSpace(ImGuiID src_dockspace_id, ImGuiID dst_dockspace_id, ImVector<const char*>* in_window_remap_pairs);
 //IMGUI_API void           DockBuilderCopyNode(ImGuiID src_node_id, ImGuiID dst_node_id, ImVector<ImGuiID>* out_node_remap_pairs);
 //IMGUI_API void           DockBuilderCopyWindowSettings(const char* src_name, const char* dst_name);
-IMGUI_API void             DockChangesFinish(ImGuiID node_id);
+//IMGUI_API void             DockChangesFinish(ImGuiID node_id);
 
 
 // ClearAllFn - Clear all settings data
@@ -208,6 +208,7 @@ IMGUI_API void             DockChangesFinish(ImGuiID node_id);
 // void  (*ApplyAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler);
 // void  (*WriteAllFn)(ImGuiContext* ctx, ImGuiSettingsHandler* handler, ImGuiTextBuffer* out_buf);
 IMGUI_API void RegisterSettingsHandler(
+    bool overwrite_if_exists,
     ImGuiContext* context,
     const char* name,
     void* ClearAllFn,
@@ -215,8 +216,14 @@ IMGUI_API void RegisterSettingsHandler(
     void* ReadOpenFn,
     void* ReadLineFn,
     void* ApplyAllFn,
-    void* WriteAllFn
+    void* WriteAllFn,
+    void* UserData
 );
+
+IMGUI_API void* GetSettingsHandlerUserData(
+    void* SettingsHandler
+);
+
 
 IMGUI_API void ItemSeparator();
 
