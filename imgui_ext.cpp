@@ -1196,6 +1196,9 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, size_t max_size, Im
 
 bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, size_t max_size, ImGuiInputTextFlags flags)
 {
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+
     if (buf.is_empty())
     {
         buf.reserve(16);
@@ -1203,7 +1206,10 @@ bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr
     }
 
     size_t buf_size = max_size > 0 ? ImMin<size_t>(max_size, buf.len() + 1) : buf.len() + 1;
-    return ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf_size, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    bool result = ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf_size, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
+    if (result) buf.correct_size();
+    ImGui::PopID();
+    return result;
 }
 
 
