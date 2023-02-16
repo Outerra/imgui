@@ -1,8 +1,9 @@
 #pragma once
 
+#define IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 #include "comm/commtypes.h"
 #include "comm/str.h"
-#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 #include "imgui.h"
 #undef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
@@ -127,7 +128,7 @@ IMGUI_API void PushDragDropStyle();
 IMGUI_API void PopDragDropStyle();
 
 template<typename T>
-inline bool SliderScalarT(const char* label, T& p_data, const T p_min, const T p_max, const char* format = NULL, ImGuiSliderFlags flags = 0) {
+inline bool SliderScalarT(ImStrv label, T& p_data, const T p_min, const T p_max, const char* format = NULL, ImGuiSliderFlags flags = 0) {
     if constexpr (std::is_same_v<T, int8>)
         return ImGui::SliderScalar(label, ImGuiDataType_S8, &p_data, &p_min, &p_max, format, flags);
     else if constexpr (std::is_same_v < T, uint8>)
@@ -153,25 +154,25 @@ inline bool SliderScalarT(const char* label, T& p_data, const T p_min, const T p
         return false;
     }
 }
-IMGUI_API bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
-IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
+IMGUI_API bool Combo(ImStrv label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 
 
-IMGUI_API void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags);
-IMGUI_API bool TextFilter(const char* hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
+IMGUI_API void TextClipped(ImStrv text, float max_width, ImGuiTextClippedFlags flags);
+IMGUI_API bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
 
-IMGUI_API bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool InputFloatForced(const char* label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool InputFloatForced(ImStrv label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool InputIntForced(const char* label, bool& forced, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step = 1, int64 step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputIntForced(ImStrv label, bool& forced, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt64Forced(ImStrv label, bool& forced, int64* v, int64 step = 1, int64 step_fast = 100, ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloatForced(ImStrv label, bool& forced, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat2Forced(ImStrv label, bool& forced, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat3Forced(ImStrv label, bool& forced, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat4Forced(ImStrv label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
-IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
+IMGUI_API bool CheckboxForced(ImStrv label, bool& forced, bool* v);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -232,101 +233,101 @@ IMGUI_API void ItemSeparator();
 namespace ImGuiEx
 {
 
-IMGUI_API void Label(const char* label);
+IMGUI_API void Label(ImStrv label);
 
-IMGUI_API bool Checkbox(const char* label, bool* v);
+IMGUI_API bool Checkbox(ImStrv label, bool* v);
 
-IMGUI_API bool DragFloat(const char* label, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // If v_min >= v_max we have no bound
-IMGUI_API bool DragFloat2(const char* label, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat3(const char* label, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat4(const char* label, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloatRange2(const char* label, float* v_current_min, float* v_current_max, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragInt(const char* label, int* v, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);  // If v_min >= v_max we have no bound
-IMGUI_API bool DragInt2(const char* label, int v[2], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragInt3(const char* label, int v[3], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragInt4(const char* label, int v[4], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragIntRange2(const char* label, int* v_current_min, int* v_current_max, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float v_speed = 1.0f, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed = 1.0f, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat(ImStrv label, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // If v_min >= v_max we have no bound
+IMGUI_API bool DragFloat2(ImStrv label, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat3(ImStrv label, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat4(ImStrv label, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloatRange2(ImStrv label, float* v_current_min, float* v_current_max, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragInt(ImStrv label, int* v, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);  // If v_min >= v_max we have no bound
+IMGUI_API bool DragInt2(ImStrv label, int v[2], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragInt3(ImStrv label, int v[3], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragInt4(ImStrv label, int v[4], float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragIntRange2(ImStrv label, int* v_current_min, int* v_current_max, float v_speed = 1.0f, int v_min = 0, int v_max = 0, const char* format = "%d", const char* format_max = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragScalar(ImStrv label, ImGuiDataType data_type, void* p_data, float v_speed = 1.0f, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, float v_speed = 1.0f, const void* p_min = NULL, const void* p_max = NULL, const char* format = NULL, ImGuiSliderFlags flags = 0);
 
-IMGUI_API bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
-IMGUI_API bool SliderFloat2(const char* label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderAngle(const char* label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f, const char* format = "%.0f deg", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderInt(const char* label, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderInt3(const char* label, int v[3], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderInt4(const char* label, int v[4], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool VSliderFloat(const char* label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool VSliderInt(const char* label, const ImVec2& size, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderFloat(ImStrv label, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
+IMGUI_API bool SliderFloat2(ImStrv label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderFloat3(ImStrv label, float v[3], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderFloat4(ImStrv label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderAngle(ImStrv label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f, const char* format = "%.0f deg", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderInt(ImStrv label, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderInt2(ImStrv label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderInt3(ImStrv label, int v[3], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderInt4(ImStrv label, int v[4], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool VSliderFloat(ImStrv label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool VSliderInt(ImStrv label, const ImVec2& size, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool VSliderScalar(ImStrv label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 
-IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat2(const char* label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat4(const char* label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt(const char* label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputDouble(const char* label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputText(ImStrv label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputTextMultiline(ImStrv label, char* buf, size_t buf_size, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputTextWithHint(ImStrv label, ImStrv hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputFloat(ImStrv label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat2(ImStrv label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat3(ImStrv label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat4(ImStrv label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt(ImStrv label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt2(ImStrv label, int v[2], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt3(ImStrv label, int v[3], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt4(ImStrv label, int v[4], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble(ImStrv label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool InputFloatCheckbox(const char* label, float* v, bool* s, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
-IMGUI_API bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0);
-IMGUI_API bool ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags = 0);
-IMGUI_API bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
+IMGUI_API bool ColorEdit3(ImStrv label, float col[3], ImGuiColorEditFlags flags = 0);
+IMGUI_API bool ColorEdit4(ImStrv label, float col[4], ImGuiColorEditFlags flags = 0);
+IMGUI_API bool ColorPicker3(ImStrv label, float col[3], ImGuiColorEditFlags flags = 0);
+IMGUI_API bool ColorPicker4(ImStrv label, float col[4], ImGuiColorEditFlags flags = 0, const float* ref_col = NULL);
 
 IMGUI_API bool BeginStatusBar();                                                 // create and append to a full screen status-bar.
 IMGUI_API void EndStatusBar();                                                   // only call EndStatusBar() if BeginStatusBar() returns true!
 
 // custom ones
-IMGUI_API bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool InputFloatForced(const char* label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool InputFloatForced(ImStrv label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool InputIntForced(const char* label, bool& forced, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step = 1, int64 step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputIntForced(ImStrv label, bool& forced, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt64Forced(ImStrv label, bool& forced, int64* v, int64 step = 1, int64 step_fast = 100, ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloatForced(ImStrv label, bool& forced, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat2Forced(ImStrv label, bool& forced, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat3Forced(ImStrv label, bool& forced, float v[3], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool DragFloat4Forced(ImStrv label, bool& forced, float v[4], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
-IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
+IMGUI_API bool CheckboxForced(ImStrv label, bool& forced, bool* v);
 
-IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
+IMGUI_API bool SliderUInt(ImStrv label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool BeginCombo(ImStrv label, ImStrv preview_value, ImGuiComboFlags flags = 0);
 IMGUI_API void EndCombo();
-IMGUI_API bool Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
-IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
+IMGUI_API bool Combo(ImStrv label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 
-IMGUI_API bool BeginListBox(const char* label, const ImVec2& size_arg = ImVec2(0, 0));
+IMGUI_API bool BeginListBox(ImStrv label, const ImVec2& size_arg = ImVec2(0, 0));
 IMGUI_API void EndListBox();
 
-IMGUI_API bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros);
-IMGUI_API bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
+IMGUI_API bool MultistateToggleButton(ImStrv label, int* current_item, const char* items_separated_by_zeros);
+IMGUI_API bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
 
-IMGUI_API bool ActiveButton(const char* label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
+IMGUI_API bool ActiveButton(ImStrv label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
 
-IMGUI_API void TextFramed(const char* label, const char* fmt, ...) IM_FMTARGS(1);
+IMGUI_API void TextFramed(ImStrv label, const char* fmt, ...) IM_FMTARGS(1);
 
-IMGUI_API bool InputTextCharstr(const char* label, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputTextCharstr(ImStrv label, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsInt(const char* label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsUInt(const char* label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsFloat(ImStrv label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsInt(ImStrv label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiSliderFlags flags = 0);
 
 }
 
