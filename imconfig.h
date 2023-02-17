@@ -83,7 +83,7 @@
 
 //---- Use stb_sprintf.h for a faster implementation of vsnprintf instead of the one from libc (unless IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS is defined)
 // Compatibility checks of arguments and formats done by clang and GCC will be disabled in order to support the extra formats provided by stb_sprintf.h.
-// #define IMGUI_USE_STB_SPRINTF
+//#define IMGUI_USE_STB_SPRINTF
 
 //---- Use FreeType to build and rasterize the font atlas (instead of stb_truetype which is embedded by default in Dear ImGui)
 // Requires FreeType headers to be available in the include path. Requires program to be compiled with 'misc/freetype/imgui_freetype.cpp' (in this repository) + the FreeType library (not provided).
@@ -112,7 +112,7 @@
         ImVec2 operator*(const ImVec2& rhs) { return ImVec2(x*rhs.x, y*rhs.y); }    \
         ImVec2 operator/(const ImVec2& rhs) { return ImVec2(x/rhs.x, y/rhs.y); }
 /*
-#define IM_VEC4_CLASS_EXTRA                                                 \
+#define IM_VEC4_CLASS_EXTRA                                                     \
         constexpr ImVec4(const MyVec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}   \
         operator MyVec4() const { return MyVec4(x,y,z,w); }
 */
@@ -127,6 +127,22 @@
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string& s)       { Begin = s.c_str(); End = Begin + s.length(); }
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string_view& s)  { Begin = s.data(); End = Begin + s.length(); }
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const MyString& s)          { Begin = s.Data; End = s.end(); }
+
+#include <comm/token.h>
+#include <comm/str.h>
+
+//used to detect char ptr types
+template<typename T, typename R> struct is_char_ptr {};
+template<typename R> struct is_char_ptr<const char*, R> { typedef R type; };
+template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
+
+#define IM_STRV_CLASS_EXTRA \
+    constexpr ImStrv(std::nullptr_t)    { Begin = End = NULL; }\
+        template <int N> constexpr ImStrv(const char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
+        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
+        template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
+        ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
+        ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
 
 //---- Use 32-bit vertex indices (default is 16-bit) is one way to allow large meshes with more than 64K vertices.
 // Your renderer backend will need to support it (most example renderer backends support both 16/32-bit indices).
