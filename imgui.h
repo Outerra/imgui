@@ -340,7 +340,7 @@ struct ImStrv
     const char* Begin;
     const char* End;
     IM_NODEBUGSTEP inline ImStrv()                            { Begin = End = NULL; }
-    IM_NODEBUGSTEP inline ImStrv(const char* b)               { Begin = b; End = b ? b + strlen(b) : NULL; }
+    //IM_NODEBUGSTEP inline ImStrv(const char* b)               { Begin = b; End = b ? b + strlen(b) : NULL; } // commented out for optimalization in IM_STRV_CLASS_EXTRA
     IM_NODEBUGSTEP inline ImStrv(const char* b, const char* e){ Begin = b; End = e ? e : b ? b + strlen(b) : NULL; }
     IM_NODEBUGSTEP inline int length() const                  { return (int)(End - Begin); }
     IM_NODEBUGSTEP inline bool empty() const                  { return Begin == End; }    // == "" or == NULL
