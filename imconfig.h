@@ -107,10 +107,22 @@
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string& s)       { Begin = s.c_str(); End = Begin + s.length(); }
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string_view& s)  { Begin = s.data(); End = Begin + s.length(); }
 //#define IM_STRV_CLASS_EXTRA    ImStrv(const MyString& s)          { Begin = s.Data; End = s.end(); }
+
 #include <comm/token.h>
 #include <comm/str.h>
-#define IM_STRV_CLASS_EXTRA ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
-                            ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
+
+//used to detect char ptr types
+template<typename T, typename R> struct is_char_ptr {};
+template<typename R> struct is_char_ptr<const char*, R> { typedef R type; };
+template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
+
+#define IM_STRV_CLASS_EXTRA \
+    constexpr ImStrv(std::nullptr_t)    { Begin = End = NULL; }\
+        template <int N> constexpr ImStrv(const char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
+        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
+        template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
+        ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
+        ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
 
 //---- Define constructor to convert your string type to ImStrv (which is a non-owning begin/end pair)
 // This will be inlined as part of ImStrv class declaration.

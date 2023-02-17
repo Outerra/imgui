@@ -288,7 +288,7 @@ struct ImStrv
     const char* Begin;
     const char* End;
     ImStrv()                            { Begin = End = NULL; }
-    ImStrv(const char* b)               { Begin = b; End = b ? b + strlen(b) : NULL; }
+    //ImStrv(const char* b)               { Begin = b; End = b ? b + strlen(b) : NULL; } // commented out for optimalization in IM_STRV_CLASS_EXTRA
     ImStrv(const char* b, const char* e){ Begin = b; End = e ? e : b + strlen(b); }
     inline size_t length() const        { return (size_t)(End - Begin); }
     inline bool empty() const           { return Begin == End; }    // == "" or == NULL
