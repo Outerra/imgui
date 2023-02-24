@@ -236,12 +236,12 @@ IMGUI_API void RegisterSettingsHandler(bool overwrite_if_exists, ImGuiContext* c
     ImGuiSettingsHandler new_handler;
     new_handler.TypeName = name;
     new_handler.TypeHash = ImHashStr(name);
-    new_handler.ClearAllFn = reinterpret_cast<ClearAllFnPtr>(ClearAllFn);
-    new_handler.ReadInitFn = reinterpret_cast<ReadInitFnPtr>(ReadInitFn);
-    new_handler.ReadOpenFn = reinterpret_cast<ReadOpenFnPtr>(ReadOpenFn);
-    new_handler.ReadLineFn = reinterpret_cast<ReadLineFnPtr>(ReadLineFn);
-    new_handler.ApplyAllFn = reinterpret_cast<ApplyAllFnPtr>(ApplyAllFn);
-    new_handler.WriteAllFn = reinterpret_cast<WriteAllFnPtr>(WriteAllFn);
+    new_handler.ClearAllFn = static_cast<ClearAllFnPtr>(ClearAllFn);
+    new_handler.ReadInitFn = static_cast<ReadInitFnPtr>(ReadInitFn);
+    new_handler.ReadOpenFn = static_cast<ReadOpenFnPtr>(ReadOpenFn);
+    new_handler.ReadLineFn = static_cast<ReadLineFnPtr>(ReadLineFn);
+    new_handler.ApplyAllFn = static_cast<ApplyAllFnPtr>(ApplyAllFn);
+    new_handler.WriteAllFn = static_cast<WriteAllFnPtr>(WriteAllFn);
     new_handler.UserData = UserData;
 
     int existing_index = 0;
