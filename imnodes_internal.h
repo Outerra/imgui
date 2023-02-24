@@ -5,7 +5,6 @@
 #include <imgui/imgui_internal.h>
 
 #include <assert.h>
-#include <limits.h>
 
 // the structure of this file:
 //
