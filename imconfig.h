@@ -119,7 +119,7 @@ template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
 #define IM_STRV_CLASS_EXTRA \
     constexpr ImStrv(std::nullptr_t)    { Begin = End = NULL; }\
         template <int N> constexpr ImStrv(const char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
-        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + N - 1) {} /*String literal constructor, optimization to have fast literal strings*/\
+        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + strnlen(str, N)) {} /*String buffer constructor, optimization to have fast literal strings*/\
         template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
         ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
         ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }

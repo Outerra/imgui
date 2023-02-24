@@ -140,15 +140,23 @@ struct ImNodeData
 
     struct
     {
-        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, OutlineHovered, OutlineSelected, OutlineActive, Titlebar, TitlebarHovered,
-            TitlebarSelected;
+        ImU32 Background = 0;
+        ImU32 BackgroundHovered = 0;
+        ImU32 BackgroundSelected = 0;
+        ImU32 Outline = 0;
+        ImU32 OutlineHovered = 0;
+        ImU32 OutlineSelected = 0;
+        ImU32 OutlineActive = 0;
+        ImU32 Titlebar = 0;
+        ImU32 TitlebarHovered = 0;
+        ImU32 TitlebarSelected = 0;
     } ColorStyle;
 
     struct
     {
-        float  CornerRounding;
+        float  CornerRounding = 0.0f;
         ImVec2 Padding;
-        float  BorderThickness;
+        float  BorderThickness = 0.0f;
     } LayoutStyle;
 
     ImVector<int> PinIndices;
@@ -160,8 +168,8 @@ struct ImNodeData
 
 struct ImPinData
 {
-    int                  Id;
-    int                  ParentNodeIdx;
+    int                  Id = -1;
+    int                  ParentNodeIdx = -1;
     ImRect               AttributeRect;
     ImNodesAttributeType Type = ImNodesAttributeType_None;
     ImNodesPinShape      Shape = ImNodesPinShape_CircleFilled;
@@ -170,7 +178,8 @@ struct ImPinData
 
     struct
     {
-        ImU32 Background, Hovered;
+        ImU32 Background = 0;
+        ImU32 Hovered = 0;
     } ColorStyle;
 
     ImPinData(const int pin_id) : Id(pin_id) {}
@@ -178,13 +187,17 @@ struct ImPinData
 
 struct ImLinkData
 {
-    int Id;
-    int StartIdx, EndIdx;
+    int Id = -1;
+    int StartIdx = -1;
+    int EndIdx = -1;
     bool Active = false;
 
     struct
     {
-        ImU32 Base, Hovered, Selected, Active;
+        ImU32 Base = 0;
+        ImU32 Hovered = 0;
+        ImU32 Selected = 0;
+        ImU32 Active = 0;
     } ColorStyle;
 
     ImLinkData(const int link_id) : Id(link_id) {}
@@ -196,7 +209,7 @@ struct ImClickInteractionState
 
     struct
     {
-        int                     StartIdx;
+        int                     StartIdx = -1;
         ImOptionalIndex         EndIdx;
         ImNodesLinkCreationType Type;
     } LinkCreation;

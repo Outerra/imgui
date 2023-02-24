@@ -2274,12 +2274,22 @@ ImNodesIO::ImNodesIO()
 }
 
 ImNodesStyle::ImNodesStyle()
-    : GridSpacing(32.f), NodeCornerRounding(4.f), NodePaddingHorizontal(8.f),
-      NodePaddingVertical(8.f), NodeBorderThickness(1.f), LinkThickness(3.f),
-      LinkLineSegmentsPerLength(0.1f), LinkHoverDistance(10.f), PinCircleRadius(4.f),
-      PinQuadSideLength(7.f), PinTriangleSideLength(9.5), PinLineThickness(1.f),
-      PinHoverRadius(10.f), PinOffset(0.f),
-      Flags(ImNodesStyleFlags_NodeOutline | ImNodesStyleFlags_GridLines), Colors()
+    : GridSpacing(32.f)
+    , NodeCornerRounding(4.f)
+    , NodePaddingHorizontal(8.f)
+    , NodePaddingVertical(8.f)
+    , NodeBorderThickness(1.f)
+    , LinkThickness(3.f)
+    , LinkLineSegmentsPerLength(0.1f)
+    , LinkHoverDistance(10.f)
+    , PinCircleRadius(4.f)
+    , PinQuadSideLength(7.f)
+    , PinTriangleSideLength(9.5)
+    , PinLineThickness(1.f)
+    , PinHoverRadius(10.f)
+    , PinOffset(0.f)
+    , Flags(ImNodesStyleFlags_NodeOutline | ImNodesStyleFlags_GridLines)
+    , Colors()
 {
 }
 
@@ -2841,7 +2851,7 @@ void Link(const int id, const int start_attr_id, const int end_attr_id, ImNodesN
     const bool use_node_links = GImNodes->Flags & ImNodesContextFlags_NodeLinks;
 
     ImNodesEditorContext& editor = EditorContextGet();
-    ImLinkData&           link = ObjectPoolFindOrCreateObject(editor.Links, id);
+    ImLinkData& link = ObjectPoolFindOrCreateObject(editor.Links, id);
     link.Id = id;
     if (use_node_links) {
         link.StartIdx = ObjectPoolFindOrCreateIndex(editor.Nodes, start_attr_id);
@@ -3376,7 +3386,9 @@ void NodeLineHandler(ImNodesEditorContext& editor, const char* const line)
 
 void EditorLineHandler(ImNodesEditorContext& editor, const char* const line)
 {
-    sscanf(line, "panning=%f,%f", &editor.Panning.x, &editor.Panning.y);
+    float x, y;
+    if (sscanf(line, "panning=%f,%f", &x, &y) == 2)
+        editor.Panning = ImVec2(x, y);
 }
 } // namespace
 
