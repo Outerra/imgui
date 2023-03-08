@@ -955,7 +955,20 @@ bool Combo(const char* label, int* current_item, const char* items_separated_by_
     return result;
 }
 
-bool CheckBoxTristate(const char* label, int* v_tristate)
+bool Combo(ImStrv label, int* current_item, const char* const* items_terminated_by_zero, int popup_max_height_in_items)
+{
+    // count items by finding the terminating zero
+    int items_count = 0;
+    while (items_terminated_by_zero[items_count] != 0) ++items_count;
+
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::Combo("##Combo", current_item, items_terminated_by_zero, items_count, popup_max_height_in_items);
+    ImGui::PopID();
+    return result;
+}
+
+bool CheckBoxTristate(ImStrv label, int* v_tristate)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
