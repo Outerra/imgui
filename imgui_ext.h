@@ -306,8 +306,9 @@ IMGUI_API bool CheckboxForced(const char* label, bool& forced, bool* v);
 IMGUI_API bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags = 0);
 IMGUI_API void EndCombo();
-IMGUI_API bool Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
-IMGUI_API bool CheckBoxTristate(const char* label, int* v_tristate);
+IMGUI_API bool Combo(ImStrv label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items = -1);
+IMGUI_API bool Combo(ImStrv label, int* current_item, const char* const* items_terinated_by_zero, int popup_max_height_in_items = -1);
+IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 
 IMGUI_API bool BeginListBox(const char* label, const ImVec2& size_arg = ImVec2(0, 0));
 IMGUI_API void EndListBox();
