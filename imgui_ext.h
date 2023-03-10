@@ -313,8 +313,9 @@ IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 IMGUI_API bool BeginListBox(const char* label, const ImVec2& size_arg = ImVec2(0, 0));
 IMGUI_API void EndListBox();
 
-IMGUI_API bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros);
-IMGUI_API bool InputBitfield(const char* label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
+IMGUI_API bool MultistateToggleButton(ImStrv label, int* current_item, const char* items_separated_by_zeros);
+IMGUI_API bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_terminated_by_zero, const char** tooltips = 0, uint inactive_mask = 0);
+IMGUI_API bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
 
 IMGUI_API bool ActiveButton(const char* label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
 
