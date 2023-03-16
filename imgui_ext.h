@@ -277,6 +277,8 @@ IMGUI_API bool InputInt2(ImStrv label, int v[2], ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputInt3(ImStrv label, int v[3], ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputInt4(ImStrv label, int v[4], ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputDouble(ImStrv label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble3(ImStrv label, double v[4], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble4(ImStrv label, double v[4], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 

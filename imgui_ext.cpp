@@ -625,6 +625,15 @@ bool InputFloat3(ImStrv label, float v[3], const char* format, ImGuiInputTextFla
     return result;
 }
 
+bool InputFloat4(ImStrv label, float v[4], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
 bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     //shows checkbox before the value, for combined and compact enable+value display
@@ -648,15 +657,6 @@ bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step, float step_
     }
     ImGui::PopID();
     return state || result;
-}
-
-bool InputFloat4(ImStrv label, float v[4], const char* format, ImGuiInputTextFlags flags)
-{
-    ImGuiEx::Label(label);
-    ImGui::PushID(label);
-    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags);
-    ImGui::PopID();
-    return result;
 }
 
 bool InputInt(ImStrv label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
@@ -700,6 +700,24 @@ bool InputDouble(ImStrv label, double* v, double step, double step_fast, const c
     ImGuiEx::Label(label);
     ImGui::PushID(label);
     bool result = ImGui::InputDouble("##InputDouble", v, step, step_fast, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputDouble3(ImStrv label, double v[3], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 3, NULL, NULL, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputDouble4(ImStrv label, double v[4], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 4, NULL, NULL, format, flags);
     ImGui::PopID();
     return result;
 }
