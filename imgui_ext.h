@@ -264,20 +264,22 @@ IMGUI_API bool VSliderFloat(const char* label, const ImVec2& size, float* v, flo
 IMGUI_API bool VSliderInt(const char* label, const ImVec2& size, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 
-IMGUI_API bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
-IMGUI_API bool InputFloat(const char* label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat2(const char* label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat3(const char* label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputFloat4(const char* label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt(const char* label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputDouble(const char* label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputText(ImStrv label, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputTextMultiline(ImStrv label, char* buf, size_t buf_size, const ImVec2& size = ImVec2(0, 0), ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputTextWithHint(ImStrv label, ImStrv hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags = 0, ImGuiInputTextCallback callback = NULL, void* user_data = NULL);
+IMGUI_API bool InputFloat(ImStrv label, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat2(ImStrv label, float v[2], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat3(ImStrv label, float v[3], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputFloat4(ImStrv label, float v[4], const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt(ImStrv label, int* v, int step = 1, int step_fast = 100, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt2(ImStrv label, int v[2], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt3(ImStrv label, int v[3], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputInt4(ImStrv label, int v[4], ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble(ImStrv label, double* v, double step = 0.0, double step_fast = 0.0, const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble3(ImStrv label, double v[4], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputDouble4(ImStrv label, double v[4], const char* format = "%.6f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool InputFloatCheckbox(const char* label, float* v, bool* s, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 

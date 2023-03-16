@@ -679,7 +679,16 @@ bool InputFloat3(const char* label, float v[3], const char* format, ImGuiInputTe
     return result;
 }
 
-bool InputFloatCheckbox(const char* label, float* v, bool* s, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputFloat4(ImStrv label, float v[4], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     //shows checkbox before the value, for combined and compact enable+value display
     ImGuiEx::Label(label);
@@ -702,15 +711,6 @@ bool InputFloatCheckbox(const char* label, float* v, bool* s, float step, float 
     }
     ImGui::PopID();
     return state || result;
-}
-
-bool InputFloat4(const char* label, float v[4], const char* format, ImGuiInputTextFlags flags)
-{
-    ImGuiEx::Label(label);
-    ImGui::PushID(label);
-    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags);
-    ImGui::PopID();
-    return result;
 }
 
 bool InputInt(const char* label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
@@ -758,7 +758,25 @@ bool InputDouble(const char* label, double* v, double step, double step_fast, co
     return result;
 }
 
-bool InputScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputDouble3(ImStrv label, double v[3], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 3, NULL, NULL, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputDouble4(ImStrv label, double v[4], const char* format, ImGuiInputTextFlags flags)
+{
+    ImGuiEx::Label(label);
+    ImGui::PushID(label);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 4, NULL, NULL, format, flags);
+    ImGui::PopID();
+    return result;
+}
+
+bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
