@@ -973,7 +973,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char* items_s
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 size(ImGui::GetContentRegionAvail().x, g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
     const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
 
     ImVec2 pos = window->DC.CursorPos;
@@ -1039,7 +1039,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 size(ImGui::GetContentRegionAvail().x, g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
     const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
 
     ImVec2 pos = window->DC.CursorPos;
@@ -1116,7 +1116,7 @@ bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zero
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 size(ImGui::GetContentRegionAvail().x, g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
     const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
 
     ImVec2 pos = window->DC.CursorPos;
@@ -1352,7 +1352,7 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
     ImGui::PushID(label);
     bool changed = false;
     const ImGuiStyle& style = ImGui::GetStyle();
-    float width = ImGui::GetContentRegionAvail().x;
+    float width = ImGui::CalcItemWidth();
     float slider_width = width - (style.ItemInnerSpacing.x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
     if (ImGui::Button(ICON_FA_ANGLE_LEFT)) {
         if (ImGui::DataTypeCompare(data_type, p_data, p_min) > 0) {
