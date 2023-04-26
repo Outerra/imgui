@@ -1019,7 +1019,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char* items_s
     return pressed;
 }
 
-bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_terminated_by_zero, const char** tooltips, uint inactive_mask)
+bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_terminated_by_zero, const char** tooltips, uint inactive_mask, bool reverse)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems)
@@ -1058,14 +1058,16 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
 
     for (int i = 0; i < items_count; ++i) {
-        const bool item_selected = (i == *current_item);
+        int item = reverse ? items_count - 1 - i : i;
+        const bool item_selected = (item == *current_item);
         const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
 
         if (label_bb.Contains(g.IO.MousePos) && pressed) {
-            *current_item = i;
+            *current_item = item;
         }
 
-        if (inactive_mask & 1)
+        bool disabled = (inactive_mask & (1 << item)) != 0;
+        if (disabled)
             ImGui::BeginDisabled();
 
         bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
@@ -1079,16 +1081,15 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
         if (g.LogEnabled)
             ImGui::LogSetNextTextDecoration("[", "]");
 
-        const char* text = items_terminated_by_zero[i];
+        const char* text = items_terminated_by_zero[item];
         const ImVec2 label_text_size = ImGui::CalcTextSize(text, true);
         ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, text, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
 
         if (lhovered && tooltips && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
-            ImGui::SetTooltip(tooltips[i]);
+            ImGui::SetTooltip(tooltips[item]);
 
-        if (inactive_mask & 1)
+        if (disabled)
             ImGui::EndDisabled();
-        inactive_mask >>= 1;
     }
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
