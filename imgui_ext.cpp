@@ -53,7 +53,7 @@ void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags)
             textRect.Max.x, text, nullptr, &textSize);
 
         if (flags & ImGuiTextClippedFlags_UseTooltip && textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", text);
+            ImGui::SetTooltip("%.*s", text.length(), text.Begin);
     }
     ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
 }
@@ -370,7 +370,7 @@ void Label(const char* label)
             textRect.Max.x, label, nullptr, &textSize);
 
         if (textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
-            ImGui::SetTooltip("%s", label);
+            ImGui::SetTooltip("%.*s", label.length(), label.Begin);
     }
     ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
     ImGui::SameLine();
