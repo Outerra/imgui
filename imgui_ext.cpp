@@ -24,7 +24,7 @@ void PopDragDropStyle()
 
 
 
-void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags)
+void TextClipped(ImStrv text, float max_width, ImGuiExTextClippedFlags flags)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     const ImGuiStyle& style = ImGui::GetStyle();
@@ -35,7 +35,7 @@ void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags)
     textRect.Max.x += max_width - style.ItemSpacing.x;
     textRect.Max.y += textSize.y;
 
-    if (flags & ImGuiTextClippedFlags_Center && max_width > textSize.x) {
+    if (flags & ImGuiExTextClippedFlags_Center && max_width > textSize.x) {
         float half = (max_width - textSize.x) * 0.5f;
         textRect.Min.x += half;
     }
@@ -52,7 +52,7 @@ void TextClipped(const char* text, float max_width, ImGuiTextClippedFlags flags)
         ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
             textRect.Max.x, text, nullptr, &textSize);
 
-        if (flags & ImGuiTextClippedFlags_UseTooltip && textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
+        if (flags & ImGuiExTextClippedFlags_UseTooltip && textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
             ImGui::SetTooltip("%.*s", text.length(), text.Begin);
     }
     ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
@@ -366,6 +366,7 @@ void Label(const char* label)
     ImGui::ItemSize(textRect);
     if (ImGui::ItemAdd(textRect, window->GetID(label)))
     {
+        label.End = ImGui::FindRenderedTextEnd(label);
         ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
             textRect.Max.x, label, nullptr, &textSize);
 
@@ -1150,7 +1151,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     return pressed;
 }
 
-bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags)
+bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiExInputBitfieldFlags flags)
 {
     int items_count = 0;
     const char* p = items_separated_by_zeros;
@@ -1166,7 +1167,7 @@ bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zero
     if (window->SkipItems)
         return false;
 
-    const bool is_readonly = (flags & ImGuiInputBitfieldFlags_ReadOnly) != 0;
+    const bool is_readonly = (flags & ImGuiExInputBitfieldFlags_ReadOnly) != 0;
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
@@ -1276,7 +1277,7 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 
     if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0)
     {
-        buf->get_buf(data->BufSize - 1);
+        data->Buf = buf->get_append_buf(data->BufSize - 1);
     }
 
     return 0;
@@ -1320,8 +1321,27 @@ bool InputTextWithHintCharstr(const char* label, const char* hint, coid::charstr
     return result;
 }
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
+static int CalcStepCount(ImGuiDataType data_type, const void* p_min, const void* p_max, const void* p_step)
+{
+    switch (data_type)
+    {
+        case ImGuiDataType_S8: return (int)((*(ImS8*)p_max - *(ImS8*)p_min) / *(ImS8*)p_step);
+        case ImGuiDataType_U8: return (int)((*(ImU8*)p_max - *(ImU8*)p_min) / *(ImU8*)p_step);
+        case ImGuiDataType_S16: return (int)((*(ImS16*)p_max - *(ImS16*)p_min) / *(ImS16*)p_step);
+        case ImGuiDataType_U16: return (int)((*(ImU16*)p_max - *(ImU16*)p_min) / *(ImU16*)p_step);
+        case ImGuiDataType_S32: return (int)((*(ImS32*)p_max - *(ImS32*)p_min) / *(ImS32*)p_step);
+        case ImGuiDataType_U32: return (int)((*(ImU32*)p_max - *(ImU32*)p_min) / *(ImU32*)p_step);
+        case ImGuiDataType_S64: return (int)((*(ImS64*)p_max - *(ImS64*)p_min) / *(ImS64*)p_step);
+        case ImGuiDataType_U64: return (int)((*(ImU64*)p_max - *(ImU64*)p_min) / *(ImU64*)p_step);
+        case ImGuiDataType_Float: return (int)((*(float*)p_max - *(float*)p_min) / *(float*)p_step);
+        case ImGuiDataType_Double: return (int)((*(double*)p_max - *(double*)p_min) / *(double*)p_step);
+        default: DASSERTX(false, "Unhandled case"); return 1;
+    }
+}
+
+bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     if (window->SkipItems)
@@ -1400,15 +1420,24 @@ bool SliderStepScalar(const char* label, ImGuiDataType data_type, void* p_data, 
     return value_changed;
 }
 
-bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
+bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiExSliderFlags flags)
 {
     ImGuiEx::Label(label);
 
+    ImGui::BeginGroup(); // The only purpose of the group here is to allow the caller to query item data e.g. IsItemActive()
     ImGui::PushID(label);
+
     bool changed = false;
     const ImGuiStyle& style = ImGui::GetStyle();
     float width = ImGui::CalcItemWidth();
-    float slider_width = width - (style.ItemInnerSpacing.x + style.FramePadding.x * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
+    int step_count = CalcStepCount(data_type, p_min, p_max, p_step);
+    float zoom_mult = (flags & ImGuiExSliderFlags_NoZoomPopup) == 0 ? step_count / width : 0.0f;
+    zoom_mult = zoom_mult > 1.0f ? 1.0f + zoom_mult : 0.0f;
+    float item_spacing = (flags & ImGuiExSliderFlags_UseSmallArrows) != 0 ? 1.0f : style.ItemSpacing.x;
+    float arrow_padding = (flags & ImGuiExSliderFlags_UseSmallArrows) != 0 ? 0.0f : style.FramePadding.x;
+    float slider_width = width - (item_spacing + arrow_padding * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(arrow_padding, style.FramePadding.y));
     if (ImGui::Button(ICON_FA_ANGLE_LEFT)) {
         if (ImGui::DataTypeCompare(data_type, p_data, p_min) > 0) {
             ImGui::DataTypeApplyOp(data_type, '-', p_data, p_data, p_step);
@@ -1416,12 +1445,53 @@ bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, 
             changed = true;
         }
     }
-    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+    ImGui::PopStyleVar();
+
+    ImGui::SameLine(0, item_spacing);
+
+    const ImVec2 popup_padding = style.WindowPadding;
+    const ImVec2 slider_size = ImVec2(slider_width, ImGui::GetFontSize() + style.FramePadding.y * 2.0f);
+    const ImVec2& cursor_pos = ImGui::GetCursorScreenPos();
+    ImVec2 popup_size = ImVec2(slider_width * zoom_mult, slider_size.y) + popup_padding * 2.0f;
+    ImVec2 popup_pos = cursor_pos - ImVec2(slider_width * (zoom_mult - 1.0f) * 0.5f - 1.0f, 0) - popup_padding;
+    popup_pos.x = ImClamp(popup_pos.x, 0.0f, ImGui::GetIO().DisplaySize.x - popup_size.x);
+
+    bool widget_hovered = ImGui::IsMouseHoveringRect(cursor_pos, cursor_pos + slider_size);
+    bool widget_clicked = widget_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left);
+    bool shift_down = ImGui::IsKeyDown(ImGuiMod_Shift);
+
+    if (shift_down && widget_clicked)
+        ImGui::BeginDisabled();
     ImGui::SetNextItemWidth(slider_width);
-    if (SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags)) {
-        changed = true;
+    SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
+    changed |= ImGui::IsItemDeactivatedAfterEdit();
+    if (shift_down && widget_clicked)
+        ImGui::EndDisabled();
+
+    if (zoom_mult > 1.0f)
+    {
+        if (shift_down && widget_clicked)
+            ImGui::OpenPopup("Enlarged slider");
+
+        ImGui::SetNextWindowPos(popup_pos);
+        ImGui::SetNextWindowSize(popup_size);
+        ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, style.FrameRounding);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, popup_padding);
+        if (ImGui::BeginPopup("Enlarged slider")) {
+            ImGui::SetNextItemWidth(slider_width * zoom_mult);
+            SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
+            changed |= ImGui::IsItemDeactivatedAfterEdit();
+            bool popup_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
+            if (!widget_hovered && !popup_hovered)
+                ImGui::CloseCurrentPopup();
+            ImGui::EndPopup();
+        }
+        ImGui::PopStyleVar(2);
     }
-    ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+    ImGui::SameLine(0, item_spacing);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(arrow_padding, style.FramePadding.y));
     if (ImGui::Button(ICON_FA_ANGLE_RIGHT)) {
         if (ImGui::DataTypeCompare(data_type, p_data, p_max) < 0) {
             ImGui::DataTypeApplyOp(data_type, '+', p_data, p_data, p_step);
@@ -1429,21 +1499,29 @@ bool SliderWithArrows(const char* label, ImGuiDataType data_type, void* p_data, 
             changed = true;
         }
     }
+    ImGui::PopStyleVar();
     ImGui::PopID();
+    ImGui::EndGroup();
+
+    if (changed) {
+        ImGuiContext* ctx = ImGui::GetCurrentContext();
+        ImGui::MarkItemEdited(ctx->LastItemData.ID);
+    }
+
     return changed;
 }
 
-bool SliderWithArrowsFloat(const char* label, float* v, float v_min, float v_max, float v_step, const char* format, ImGuiSliderFlags flags)
+bool SliderWithArrowsFloat(ImStrv label, float* v, float v_min, float v_max, float v_step, const char* format, ImGuiExSliderFlags flags)
 {
     return SliderWithArrows(label, ImGuiDataType_Float, v, &v_min, &v_max, &v_step, format, flags);
 }
 
-bool SliderWithArrowsInt(const char* label, int* v, int v_min, int v_max, int v_step, const char* format, ImGuiSliderFlags flags)
+bool SliderWithArrowsInt(ImStrv label, int* v, int v_min, int v_max, int v_step, const char* format, ImGuiExSliderFlags flags)
 {
     return SliderWithArrows(label, ImGuiDataType_S32, v, &v_min, &v_max, &v_step, format, flags);
 }
 
-bool SliderWithArrowsUInt(const char* label, uint* v, uint v_min, uint v_max, uint v_step, const char* format, ImGuiSliderFlags flags)
+bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_step, const char* format, ImGuiExSliderFlags flags)
 {
     return SliderWithArrows(label, ImGuiDataType_U32, v, &v_min, &v_max, &v_step, format, flags);
 }
