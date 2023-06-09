@@ -13,21 +13,38 @@ static constexpr ImU32 IM_WARN_COLOR = IM_COL32(241, 196, 15, 255);
 static constexpr ImU32 IM_INFO_COLOR = IM_COL32(52, 152, 219, 255);
 static constexpr ImU32 IM_OK_COLOR = IM_COL32(91, 193, 0, 255);
 
-typedef int ImGuiTextClippedFlags;              // -> enum ImGuiTextClippedFlags_       // Flags: for TextClipped()
-typedef int ImGuiInputBitfieldFlags;            // -> enum ImGuiInputBitfieldFlags_     // Flags: for InputBitfield()
+typedef int ImGuiExTextClippedFlags;              // -> enum ImGuiExTextClippedFlags_       // Flags: for TextClipped()
+typedef int ImGuiExInputBitfieldFlags;            // -> enum ImGuiExInputBitfieldFlags_     // Flags: for InputBitfield()
+typedef int ImGuiExSliderFlags;                   // -> enum ImGuiExSliderFlags_            // Flags: for SliderWithArrows()
 
 // Flags for TextClipped()
-enum ImGuiTextClippedFlags_
+enum ImGuiExTextClippedFlags_
 {
-    ImGuiTextClippedFlags_None = 0,
-    ImGuiTextClippedFlags_Center = 1 << 0,      // Center text if shorter than max_width
-    ImGuiTextClippedFlags_UseTooltip = 1 << 1,  // Show tooltip with whole text if clipped
+    ImGuiExTextClippedFlags_None = 0,
+    ImGuiExTextClippedFlags_Center = 1 << 0,      // Center text if shorter than max_width
+    ImGuiExTextClippedFlags_UseTooltip = 1 << 1,  // Show tooltip with whole text if clipped
 };
 
-enum ImGuiInputBitfieldFlags_
+// Flags for InputBitfield()
+enum ImGuiExInputBitfieldFlags_
 {
-    ImGuiInputBitfieldFlags_None = 0,
-    ImGuiInputBitfieldFlags_ReadOnly = 1 << 0,      // Read-only mode
+    ImGuiExInputBitfieldFlags_None = 0,
+    ImGuiExInputBitfieldFlags_ReadOnly = 1 << 0,      // Read-only mode
+};
+
+enum ImGuiExSliderFlags_
+{
+    ImGuiExSliderFlags_None                   = 0,
+    ImGuiExSliderFlags_AlwaysClamp            = 1 << 4,       // Clamp value to min/max bounds when input manually with CTRL+Click. By default CTRL+Click allows going out of bounds.
+    ImGuiExSliderFlags_Logarithmic            = 1 << 5,       // Make the widget logarithmic (linear otherwise). Consider using ImGuiSliderFlags_NoRoundToFormat with this if using a format-string with small amount of digits.
+    ImGuiExSliderFlags_NoRoundToFormat        = 1 << 6,       // Disable rounding underlying value to match precision of the display format string (e.g. %.3f values are rounded to those 3 digits)
+    ImGuiExSliderFlags_NoInput                = 1 << 7,       // Disable CTRL+Click or Enter key allowing to input text directly into the widget
+
+    ImGuiExSliderFlags_NoZoomPopup            = 1 << 16,      // Disable Shift+Click to open enlarged slider in popup for easier manipulation in narrow UI
+    ImGuiExSliderFlags_UseSmallArrows         = 1 << 17,      // Tight fit of arrows, better for really narrow UI
+
+    // [Internal]
+    ImGuiExSliderFlags_CoreFlagsMask_         = (1 << 16) - 1 // Mask for filtering flags to send to core imgui widget
 };
 
 
@@ -158,7 +175,7 @@ IMGUI_API bool Combo(ImStrv label, uint8* current_item, const char* items_separa
 IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 
 
-IMGUI_API void TextClipped(ImStrv text, float max_width, ImGuiTextClippedFlags flags);
+IMGUI_API void TextClipped(ImStrv text, float max_width, ImGuiExTextClippedFlags flags);
 IMGUI_API bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
 
 IMGUI_API bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
@@ -318,7 +335,7 @@ IMGUI_API void EndListBox();
 
 IMGUI_API bool MultistateToggleButton(ImStrv label, int* current_item, const char* items_separated_by_zeros);
 IMGUI_API bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_terminated_by_zero, const char** tooltips = 0, uint inactive_mask = 0, bool reverse = false);
-IMGUI_API bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiInputBitfieldFlags flags = 0);
+IMGUI_API bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiExInputBitfieldFlags flags = 0);
 
 IMGUI_API bool ActiveButton(ImStrv label, bool active, const ImVec2& size_arg = ImVec2(0, 0));
 
@@ -328,10 +345,10 @@ IMGUI_API bool InputTextCharstr(ImStrv label, coid::charstr& buf, size_t max_siz
 IMGUI_API bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsFloat(ImStrv label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsInt(ImStrv label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_steps, const char* format = NULL, ImGuiExSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsFloat(ImStrv label, float* v, float v_min, float v_max, float v_step, const char* format = "%.3f", ImGuiExSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsInt(ImStrv label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiExSliderFlags flags = 0);
+IMGUI_API bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiExSliderFlags flags = 0);
 
 }
 
