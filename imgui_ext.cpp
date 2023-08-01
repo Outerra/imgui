@@ -1277,7 +1277,7 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 
     if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0)
     {
-        data->Buf = buf->get_append_buf(data->BufSize - 1);
+        data->Buf = buf->get_buf(data->BufTextLen);
     }
 
     return 0;
@@ -1298,7 +1298,8 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, size_t max_size, Im
 
     size_t buf_size = max_size > 0 ? ImMin<size_t>(max_size, buf.len() + 1) : buf.len() + 1;
     bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf_size, flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
-    if (result) buf.correct_size();
+    if (result)
+        buf.correct_size();
     ImGui::PopID();
     return result;
 }
