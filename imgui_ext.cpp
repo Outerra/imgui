@@ -1223,7 +1223,7 @@ static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 
     if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0)
     {
-        data->Buf = buf->get_buf(data->BufTextLen);
+        data->Buf = buf->get_buf(data->BufSize - 1);
     }
 
     return 0;
