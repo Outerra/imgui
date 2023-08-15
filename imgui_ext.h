@@ -1,11 +1,8 @@
 #pragma once
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 #include "comm/commtypes.h"
 #include "comm/str.h"
 #include "imgui.h"
-#undef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
 
 static constexpr ImU32 IM_FORCED_COLOR = IM_COL32(255, 130, 40, 255);
 static constexpr ImU32 IM_ERROR_COLOR = IM_COL32(231, 76, 60, 255);
