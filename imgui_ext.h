@@ -12,8 +12,17 @@ static constexpr ImU32 IM_WARN_COLOR = IM_COL32(241, 196, 15, 255);
 static constexpr ImU32 IM_INFO_COLOR = IM_COL32(52, 152, 219, 255);
 static constexpr ImU32 IM_OK_COLOR = IM_COL32(91, 193, 0, 255);
 
-typedef int ImGuiTextClippedFlags;              // -> enum ImGuiTextClippedFlags_       // Flags: for TextClipped()
-typedef int ImGuiInputBitfieldFlags;            // -> enum ImGuiInputBitfieldFlags_     // Flags: for InputBitfield()
+static const ImU32 IM_OK_BUTTON_COLOR = (ImU32)ImColor::HSV(0.33f, 0.5f, 0.5f);
+static const ImU32 IM_OK_BUTTON_COLOR_HOVERED = (ImU32)ImColor::HSV(0.33f, 0.6f, 0.6f);
+static const ImU32 IM_OK_BUTTON_COLOR_ACTIVE = (ImU32)ImColor::HSV(0.33f, 0.7f, 0.7f);
+
+static const ImU32 IM_ERROR_BUTTON_COLOR = (ImU32)ImColor::HSV(0.02f, 0.6f, 0.6f);
+static const ImU32 IM_ERROR_BUTTON_COLOR_HOVERED = (ImU32)ImColor::HSV(0.02f, 0.7f, 0.7f);
+static const ImU32 IM_ERROR_BUTTON_COLOR_ACTIVE = (ImU32)ImColor::HSV(0.02f, 0.8f, 0.8f);
+
+typedef int ImGuiExTextClippedFlags;              // -> enum ImGuiExTextClippedFlags_       // Flags: for TextClipped()
+typedef int ImGuiExInputBitfieldFlags;            // -> enum ImGuiExInputBitfieldFlags_     // Flags: for InputBitfield()
+typedef int ImGuiExSliderFlags;                   // -> enum ImGuiExSliderFlags_            // Flags: for SliderWithArrows()
 
 // Flags for TextClipped()
 enum ImGuiTextClippedFlags_
