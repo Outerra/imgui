@@ -62,10 +62,10 @@ bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width)
 {
     ImGui::PushID(hint);
     ImGui::PushItemWidth(width);
+    ImGui::SetNextItemAllowOverlap();
     bool result = ImGui::InputTextWithHint("##filter", hint, buf, buf_size);
     ImGui::PopItemWidth();
     if (*buf != '\0') {
-        ImGui::SetItemAllowOverlap();
         ImGui::SameLine(0, -1);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 26);
         if (ImGui::SmallButton("x")) {
@@ -1312,21 +1312,26 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     if (format == NULL)
         format = ImGui::DataTypeGetInfo(data_type)->PrintFmt;
 
-    // Tabbing or CTRL-clicking on Slider turns it into an input box
-    const bool hovered = ImGui::ItemHoverable(frame_bb, id);
+    const bool hovered = ImGui::ItemHoverable(frame_bb, id, g.LastItemData.InFlags);
     bool temp_input_is_active = temp_input_allowed && ImGui::TempInputIsActive(id);
     if (!temp_input_is_active)
     {
+        // Tabbing or CTRL-clicking on Slider turns it into an input box
         const bool input_requested_by_tabbing = temp_input_allowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
-        const bool clicked = (hovered && g.IO.MouseClicked[0]);
-        if (input_requested_by_tabbing || clicked || g.NavActivateId == id || g.NavActivateInputId == id)
+        const bool clicked = hovered && ImGui::IsMouseClicked(0, id);
+        const bool make_active = (input_requested_by_tabbing || clicked || g.NavActivateId == id);
+        if (make_active && clicked)
+            ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);
+        if (make_active && temp_input_allowed)
+            if (input_requested_by_tabbing || (clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
+                temp_input_is_active = true;
+
+        if (make_active && !temp_input_is_active)
         {
             ImGui::SetActiveID(id, window);
             ImGui::SetFocusID(id, window);
             ImGui::FocusWindow(window);
             g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
-            if (temp_input_allowed && (input_requested_by_tabbing || (clicked && g.IO.KeyCtrl) || g.NavActivateInputId == id))
-                temp_input_is_active = true;
         }
     }
 
@@ -1363,7 +1368,7 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     if (label_size.x > 0.0f)
         ImGui::RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, frame_bb.Min.y + style.FramePadding.y), label);
 
-    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
+    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags | (temp_input_allowed ? ImGuiItemStatusFlags_Inputable : 0));
     return value_changed;
 }
 

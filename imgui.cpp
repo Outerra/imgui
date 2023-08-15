@@ -13825,12 +13825,6 @@ const char* ImGui::SaveIniSettingsToMemory(size_t* out_size)
 ImGuiWindowSettings* ImGui::CreateNewWindowSettings(ImStrv name)
 {
     ImGuiContext& g = *GImGui;
-    const size_t name_len = name.length();
-    if (!name_len)
-    {
-        IM_ASSERT(false && "Name must not be empty.");
-        return NULL;
-    }
 
     if (g.IO.ConfigDebugIniSettings == false)
     {
