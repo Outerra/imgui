@@ -349,7 +349,7 @@ void Label(const char* label)
     if (textSize.x == 0.0f) return;
 
     const ImGuiStyle& style = ImGui::GetStyle();
-    float fullWidth = ImGui::GetContentRegionAvail().x;
+    float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
     float itemWidth = fullWidth * 0.65f;
     ImRect textRect;
     textRect.Min = ImGui::GetCursorScreenPos();
