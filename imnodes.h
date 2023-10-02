@@ -84,7 +84,7 @@ enum ImNodesPinShape_
 
 enum ImNodesContextFlags_
 {
-    ImNodesContextFlags_Default = 0, //use pins for node linking
+    ImNodesContextFlags_Default = 0,        //use pins for node linking
     ImNodesContextFlags_NodeLinks = 1 << 0, // use linking directly between nodes
 };
 
@@ -236,6 +236,7 @@ void                  EditorContextSet(ImNodesEditorContext*);
 ImVec2                EditorContextGetPanning();
 void                  EditorContextResetPanning(const ImVec2& pos);
 void                  EditorContextMoveToNode(const int node_id);
+void                  EditorContextSetSnapToGrid(bool do_snap);
 
 ImVec2                EditorContextScreenSpaceToGridSpace(const ImVec2& pos);
 
