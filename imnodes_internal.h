@@ -255,6 +255,7 @@ struct ImNodesEditorContext
     ImVector<int> SelectedLinkIndices;
 
     ImClickInteractionState ClickInteraction;
+    bool SnapToGrid = false;
     bool NodesMoving = false;
 };
 

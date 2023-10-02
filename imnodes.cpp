@@ -1086,6 +1086,18 @@ void ClickInteractionUpdate(ImNodesEditorContext& editor)
         if (GImNodes->LeftMouseReleased)
         {
             editor.ClickInteraction.Type = ImNodesClickInteractionType_None;
+            if (editor.SnapToGrid) {
+                for (int i = 0; i < editor.SelectedNodeIndices.size(); ++i)
+                {
+                    const int node_idx = editor.SelectedNodeIndices[i];
+                    ImNodeData& node = editor.Nodes.Pool[node_idx];
+                    if (node.Draggable)
+                    {
+                        node.Origin = ImVec2(roundf(node.Origin.x / GImNodes->Style.GridSpacing) * GImNodes->Style.GridSpacing,
+                            roundf(node.Origin.y / GImNodes->Style.GridSpacing) * GImNodes->Style.GridSpacing);
+                    }
+                }
+            }
         }
     }
     break;
@@ -2353,6 +2365,12 @@ void EditorContextMoveToNode(const int node_id)
 
     editor.Panning.x = -node.Origin.x;//TODO: CalcNodeOrigin(editor, node) ???
     editor.Panning.y = -node.Origin.y;//TODO: CalcNodeOrigin(editor, node) ???
+}
+
+void EditorContextSetSnapToGrid(bool do_snap)
+{
+    ImNodesEditorContext& editor = EditorContextGet();
+    editor.SnapToGrid = do_snap;
 }
 
 ImVec2 EditorContextScreenSpaceToGridSpace(const ImVec2& pos)
