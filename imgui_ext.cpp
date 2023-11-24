@@ -290,13 +290,16 @@ namespace ImGuiEx
 void Label(ImStrv label)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
+    float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
 
     ImVec2 textSize = ImGui::CalcTextSize(label, true);
-    if (textSize.x == 0.0f) return;
+    if (textSize.x == 0.0f) {
+        ImGui::SetNextItemWidth(fullWidth);
+        return;
+    }
 
-    const ImGuiStyle& style = ImGui::GetStyle();
-    float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
     float itemWidth = fullWidth * 0.65f;
+    const ImGuiStyle& style = ImGui::GetStyle();
     ImRect textRect;
     textRect.Min = ImGui::GetCursorScreenPos();
     textRect.Max = textRect.Min;
