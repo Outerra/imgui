@@ -146,6 +146,8 @@ struct TreeViewClipper {
     }
 };
 
+IMGUI_API void StyleColorsOuterra(ImGuiStyle* dst = NULL);    // Outerra, recommended style (default)
+
 IMGUI_API void PushDragDropStyle();
 IMGUI_API void PopDragDropStyle();
 
