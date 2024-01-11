@@ -258,6 +258,7 @@ namespace ImGuiEx
 {
 
 IMGUI_API void Label(ImStrv label);
+IMGUI_API bool Label(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling 
 
 IMGUI_API bool Checkbox(ImStrv label, bool* v);
 
@@ -278,6 +279,8 @@ IMGUI_API bool SliderFloat(ImStrv label, float* v, float v_min, float v_max, con
 IMGUI_API bool SliderFloat2(ImStrv label, float v[2], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderFloat3(ImStrv label, float v[3], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderFloat4(ImStrv label, float v[4], float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderFloatN(ImStrv label, float* p_data, int components, float v_min, float v_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderFloatStateN(ImStrv label, bool* p_state, float* p_data, int components, float v_min, float v_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderAngle(ImStrv label, float* v_rad, float v_degrees_min = -360.0f, float v_degrees_max = +360.0f, const char* format = "%.0f deg", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderInt(ImStrv label, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderInt2(ImStrv label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
@@ -285,6 +288,7 @@ IMGUI_API bool SliderInt3(ImStrv label, int v[3], int v_min, int v_max, const ch
 IMGUI_API bool SliderInt4(ImStrv label, int v[4], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderScalarStateN(ImStrv label, bool* p_state, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool VSliderFloat(ImStrv label, const ImVec2& size, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool VSliderInt(ImStrv label, const ImVec2& size, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool VSliderScalar(ImStrv label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
