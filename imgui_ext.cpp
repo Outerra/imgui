@@ -1629,4 +1629,19 @@ bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_
     return SliderWithArrows(label, ImGuiDataType_U32, v, &v_min, &v_max, &v_step, format, flags);
 }
 
+void SetItemTooltip(ImGuiHoveredFlags additional_hovered_flags, bool override_previous, const char* fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip | additional_hovered_flags))
+    {
+        if (!ImGui::BeginTooltipEx(override_previous ? ImGuiTooltipFlags_OverridePrevious : ImGuiTooltipFlags_None, ImGuiWindowFlags_None))
+            return;
+
+        ImGui::TextV(fmt, args);
+        ImGui::EndTooltip();
+    }
+    va_end(args);
+}
+
 }

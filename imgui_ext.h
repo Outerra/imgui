@@ -361,6 +361,11 @@ IMGUI_API bool SliderWithArrowsFloat(ImStrv label, float* v, float v_min, float 
 IMGUI_API bool SliderWithArrowsInt(ImStrv label, int* v, int v_min, int v_max, int v_step = 1, const char* format = "%d", ImGuiExSliderFlags flags = 0);
 IMGUI_API bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_max, uint v_step = 1, const char* format = "%u", ImGuiExSliderFlags flags = 0);
 
+/// @brief Sets tooltip for hovered item
+/// @param additional_hovered_flags - additional flags added to default(see ImGuiHoveredFlags_Tooltip flag)
+/// @param override_previous - override previous tooltips for hovered item (concate otherwise)
+/// @param fmt, ... - printf params
+IMGUI_API void SetItemTooltip(ImGuiHoveredFlags additional_hovered_flags, bool override_previous, const char* fmt, ...);
 }
 
 struct ImGuiTextureExt
