@@ -442,7 +442,62 @@ void Label(const char* label)
     ImGui::SetNextItemWidth(itemWidth);
 }
 
-bool Checkbox(const char* label, bool* v)
+bool Label(ImStrv label, bool* checkbox)
+{
+    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
+
+    ImVec2 textSize = ImGui::CalcTextSize(label, true);
+    if (textSize.x == 0.0f) {
+        //ImGui::SetNextItemWidth(fullWidth);
+        return false;
+    }
+
+    float itemWidth = fullWidth * 0.65f;
+    const ImGuiStyle& style = ImGui::GetStyle();
+
+    ImRect textRect;
+    textRect.Min = ImGui::GetCursorScreenPos();
+    textRect.Max = textRect.Min;
+    textRect.Max.x += fullWidth - itemWidth - style.ItemSpacing.x;
+    textRect.Max.y += textSize.y;
+
+    if (checkbox)
+        textRect.Max.x -= ImGui::GetFrameHeight() + style.ItemSpacing.x;
+
+    ImGui::SetCursorScreenPos(textRect.Min);
+
+    ImGui::AlignTextToFramePadding();
+    textRect.Min.y += window->DC.CurrLineTextBaseOffset;
+    textRect.Max.y += window->DC.CurrLineTextBaseOffset;
+
+    bool result = false;
+
+    ImGui::ItemSize(textRect);
+    if (ImGui::ItemAdd(textRect, window->GetID(label)))
+    {
+        label.End = ImGui::FindRenderedTextEnd(label);
+        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
+            textRect.Max.x, label, &textSize);
+
+        if (checkbox) {
+            ImGui::SameLine();
+            ImGui::PushID(label);
+            result = ImGui::Checkbox("##Checkbox", checkbox);
+            ImGui::PopID();
+        }
+
+        if (textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
+            ImGui::SetTooltip("%.*s", label.length(), label.Begin);
+    }
+    ImGui::SetCursorScreenPos(textRect.Max - ImVec2{0, textSize.y + window->DC.CurrLineTextBaseOffset});
+    ImGui::SameLine();
+    ImGui::SetNextItemWidth(itemWidth);
+
+    return result;
+}
+
+bool Checkbox(ImStrv label, bool* v)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -602,7 +657,17 @@ bool SliderFloat4(const char* label, float v[4], float v_min, float v_max, const
     return result;
 }
 
-bool SliderAngle(const char* label, float* v_rad, float v_degrees_min, float v_degrees_max, const char* format, ImGuiSliderFlags flags)
+bool SliderFloatN(ImStrv label, float* v, int components, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    return ImGuiEx::SliderScalarN(label, ImGuiDataType_Float, v, components, &v_min, &v_max, format, flags);
+}
+
+bool SliderFloatStateN(ImStrv label, bool* p_state, float* v, int components, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    return ImGuiEx::SliderScalarStateN(label, p_state, ImGuiDataType_Float, v, components, &v_min, &v_max, format, flags);
+}
+
+bool SliderAngle(ImStrv label, float* v_rad, float v_degrees_min, float v_degrees_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -662,7 +727,22 @@ bool SliderScalarN(const char* label, ImGuiDataType data_type, void* p_data, int
     return result;
 }
 
-bool VSliderFloat(const char* label, const ImVec2& size, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderScalarStateN(ImStrv label, bool* p_state, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+{
+    bool state_result = ImGuiEx::Label(label, p_state);
+
+    if (!*p_state)
+        ImGui::BeginDisabled();
+    ImGui::PushID(label);
+    bool result = ImGui::SliderScalarN("##SliderScalarN", data_type, p_data, components, p_min, p_max, format, flags);
+    ImGui::PopID();
+    if (!*p_state)
+        ImGui::EndDisabled();
+
+    return state_result || result;
+}
+
+bool VSliderFloat(ImStrv label, const ImVec2& size, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
