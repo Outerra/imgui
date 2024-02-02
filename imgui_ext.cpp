@@ -457,6 +457,22 @@ bool Checkbox(ImStrv label, bool* v)
     return result;
 }
 
+bool CheckboxRightAlign(ImStrv label, bool* v)
+{
+    const ImGuiStyle& style = ImGui::GetStyle();
+    float text_width = ImGui::CalcTextSize(label).x;
+    float pos = ImGui::GetWindowContentRegionMax().x - (text_width + style.ItemSpacing.x + ImGui::GetFrameHeight());
+
+    ImGui::SetCursorPosX(pos);
+    ImGui::TextUnformatted(label);
+    ImGui::SameLine();
+
+    ImGui::PushID(label);
+    bool result = ImGui::Checkbox("##Checkbox", v);
+    ImGui::PopID();
+    return result;
+}
+
 
 bool DragFloat(ImStrv label, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {

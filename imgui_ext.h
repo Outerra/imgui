@@ -261,6 +261,7 @@ IMGUI_API void Label(ImStrv label);
 IMGUI_API bool Label(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling 
 
 IMGUI_API bool Checkbox(ImStrv label, bool* v);
+IMGUI_API bool CheckboxRightAlign(ImStrv label, bool* v); // label+checkbox aligned to the right window edge
 
 IMGUI_API bool DragFloat(ImStrv label, float* v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // If v_min >= v_max we have no bound
 IMGUI_API bool DragFloat2(ImStrv label, float v[2], float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
