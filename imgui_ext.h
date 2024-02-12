@@ -183,7 +183,7 @@ IMGUI_API bool CheckBoxTristate(ImStrv label, int* v_tristate);
 
 
 IMGUI_API void TextClipped(ImStrv text, float max_width, ImGuiExTextClippedFlags flags);
-IMGUI_API bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width = -1.0f); //for more about width, see ImGui::PushItemWidth(float)
+IMGUI_API bool TextFilter(ImStrv hint, char* buf, size_t buf_size);
 
 IMGUI_API bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 IMGUI_API bool InputFloatForced(ImStrv label, bool& forced, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
