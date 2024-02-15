@@ -119,13 +119,12 @@ void TextClipped(ImStrv text, float max_width, ImGuiExTextClippedFlags flags)
     ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
 }
 
-bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width)
+bool TextFilter(ImStrv hint, char* buf, size_t buf_size)
 {
     ImGui::PushID(hint);
-    ImGui::PushItemWidth(width);
+    ImGui::BeginGroup();
     ImGui::SetNextItemAllowOverlap();
     bool result = ImGui::InputTextWithHint("##filter", hint, buf, buf_size);
-    ImGui::PopItemWidth();
     if (*buf != '\0') {
         ImGui::SameLine(0, -1);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 26);
@@ -134,6 +133,7 @@ bool TextFilter(ImStrv hint, char* buf, size_t buf_size, float width)
             result = true;
         }
     }
+    ImGui::EndGroup();
     ImGui::PopID();
     return result;
 }
