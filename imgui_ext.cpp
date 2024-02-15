@@ -1606,7 +1606,8 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
     float slider_width = width - (item_spacing + arrow_padding * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(arrow_padding, style.FramePadding.y));
-    if (ImGui::Button(ICON_FA_ANGLE_LEFT)) {
+    if (ImGui::Button(ICON_FA_ANGLE_LEFT))
+    {
         if (ImGui::DataTypeCompare(data_type, p_data, p_min) > 0) {
             ImGui::DataTypeApplyOp(data_type, '-', p_data, p_data, p_step);
             ImGui::DataTypeClamp(data_type, p_data, p_min, p_max);
@@ -1630,9 +1631,11 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
 
     if (shift_down && widget_clicked)
         ImGui::BeginDisabled();
+
     ImGui::SetNextItemWidth(slider_width);
-    SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
-    changed |= ImGui::IsItemDeactivatedAfterEdit();
+
+    changed |= SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
+
     if (shift_down && widget_clicked)
         ImGui::EndDisabled();
 
@@ -1645,13 +1648,16 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
         ImGui::SetNextWindowSize(popup_size);
         ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, style.FrameRounding);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, popup_padding);
-        if (ImGui::BeginPopup("Enlarged slider")) {
+        if (ImGui::BeginPopup("Enlarged slider"))
+        {
             ImGui::SetNextItemWidth(slider_width * zoom_mult);
-            SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
-            changed |= ImGui::IsItemDeactivatedAfterEdit();
+
+            changed |= SliderStepScalar("##slider", data_type, p_data, p_min, p_max, p_step, format, flags & ImGuiExSliderFlags_CoreFlagsMask_);
+
             bool popup_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem);
             if (!widget_hovered && !popup_hovered)
                 ImGui::CloseCurrentPopup();
+
             ImGui::EndPopup();
         }
         ImGui::PopStyleVar(2);
@@ -1660,7 +1666,8 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
     ImGui::SameLine(0, item_spacing);
 
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(arrow_padding, style.FramePadding.y));
-    if (ImGui::Button(ICON_FA_ANGLE_RIGHT)) {
+    if (ImGui::Button(ICON_FA_ANGLE_RIGHT))
+    {
         if (ImGui::DataTypeCompare(data_type, p_data, p_max) < 0) {
             ImGui::DataTypeApplyOp(data_type, '+', p_data, p_data, p_step);
             ImGui::DataTypeClamp(data_type, p_data, p_min, p_max);
@@ -1671,7 +1678,8 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
     ImGui::PopID();
     ImGui::EndGroup();
 
-    if (changed) {
+    if (changed)
+    {
         ImGuiContext* ctx = ImGui::GetCurrentContext();
         ImGui::MarkItemEdited(ctx->LastItemData.ID);
     }
