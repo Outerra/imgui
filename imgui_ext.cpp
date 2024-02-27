@@ -1552,7 +1552,7 @@ bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const
     int step_count = CalcStepCount(data_type, p_min, p_max, p_step);
     float zoom_mult = (flags & ImGuiExSliderFlags_NoZoomPopup) == 0 ? step_count / width : 0.0f;
     zoom_mult = zoom_mult > 1.0f ? 1.0f + zoom_mult : 0.0f;
-    float item_spacing = (flags & ImGuiExSliderFlags_UseSmallArrows) != 0 ? 1.0f : style.ItemSpacing.x;
+    float item_spacing = (flags & ImGuiExSliderFlags_UseSmallArrows) != 0 ? 1.0f : style.ItemInnerSpacing.x;
     float arrow_padding = (flags & ImGuiExSliderFlags_UseSmallArrows) != 0 ? 0.0f : style.FramePadding.x;
     float slider_width = width - (item_spacing + arrow_padding * 2.0f + ImGui::CalcTextSize(ICON_FA_ANGLE_LEFT).x) * 2.0f;
 
