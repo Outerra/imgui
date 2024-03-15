@@ -252,6 +252,8 @@ IMGUI_API void* GetSettingsHandlerUserData(
 
 IMGUI_API void ItemSeparator();
 
+IMGUI_API void SetTooltipUnformatted(ImStrv text);
+
 }
 
 namespace ImGuiEx
