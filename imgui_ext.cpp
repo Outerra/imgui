@@ -342,6 +342,11 @@ void ItemSeparator()
     ImGui::PopStyleColor();
 }
 
+void SetTooltipUnformatted(ImStrv text)
+{
+    ImGui::SetTooltip("%.*s", text.length(), text.Begin);
+}
+
 }
 
 
@@ -937,7 +942,6 @@ bool ColorPicker4(ImStrv label, float col[4], ImGuiColorEditFlags flags, const f
     ImGui::PopID();
     return result;
 }
-
 
 bool BeginStatusBar()
 {
