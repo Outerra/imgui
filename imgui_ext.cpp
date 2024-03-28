@@ -355,7 +355,7 @@ void Label(ImStrv label)
 
     ImVec2 textSize = ImGui::CalcTextSize(label, true);
     if (textSize.x == 0.0f) {
-        //ImGui::SetNextItemWidth(fullWidth);
+        ImGui::SetNextItemWidth(-1);
         return;
     }
 
