@@ -409,7 +409,7 @@ void Label(const char* label)
 
     ImVec2 textSize = ImGui::CalcTextSize(label, 0, true);
     if (textSize.x == 0.0f) {
-        //ImGui::SetNextItemWidth(fullWidth);
+        ImGui::SetNextItemWidth(-1);
         return;
     }
 
