@@ -360,7 +360,9 @@ void Label(ImStrv label)
 
     ImVec2 textSize = ImGui::CalcTextSize(label, true);
     if (textSize.x == 0.0f) {
-        ImGui::SetNextItemWidth(-1);
+        ImGuiContext& g = *GImGui;
+        if ((g.NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth) == 0)
+            ImGui::SetNextItemWidth(-1);
         return;
     }
 
