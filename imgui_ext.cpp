@@ -355,47 +355,10 @@ namespace ImGuiEx
 
 void Label(ImStrv label)
 {
-    ImGuiWindow* window = ImGui::GetCurrentWindow();
-    float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
-
-    ImVec2 textSize = ImGui::CalcTextSize(label, true);
-    if (textSize.x == 0.0f) {
-        ImGuiContext& g = *GImGui;
-        if ((g.NextItemData.Flags & ImGuiNextItemDataFlags_HasWidth) == 0)
-            ImGui::SetNextItemWidth(-1);
-        return;
-    }
-
-    float itemWidth = fullWidth * 0.65f;
-    const ImGuiStyle& style = ImGui::GetStyle();
-    ImRect textRect;
-    textRect.Min = ImGui::GetCursorScreenPos();
-    textRect.Max = textRect.Min;
-    textRect.Max.x += fullWidth - itemWidth - style.ItemSpacing.x;
-    textRect.Max.y += textSize.y;
-
-    ImGui::SetCursorScreenPos(textRect.Min);
-
-    ImGui::AlignTextToFramePadding();
-    textRect.Min.y += window->DC.CurrLineTextBaseOffset;
-    textRect.Max.y += window->DC.CurrLineTextBaseOffset;
-
-    ImGui::ItemSize(textRect);
-    if (ImGui::ItemAdd(textRect, window->GetID(label)))
-    {
-        label.End = ImGui::FindRenderedTextEnd(label);
-        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
-            textRect.Max.x, label, &textSize);
-
-        if (textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
-            ImGui::SetTooltip("%.*s", label.length(), label.Begin);
-    }
-    ImGui::SetCursorScreenPos(textRect.Max - ImVec2{ 0, textSize.y + window->DC.CurrLineTextBaseOffset });
-    ImGui::SameLine();
-    ImGui::SetNextItemWidth(itemWidth);
+    LabelCheck(label, nullptr);
 }
 
-bool Label(ImStrv label, bool* checkbox)
+bool LabelCheck(ImStrv label, bool* checkbox)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
     float fullWidth = ImMax(ImGui::GetContentRegionAvail().x, ImGui::CalcItemWidth());
@@ -599,6 +562,27 @@ bool SliderFloat(ImStrv label, float* v, float v_min, float v_max, const char* f
     return result;
 }
 
+bool SliderFloatCheckbox(ImStrv label, bool* s, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+{
+    //shows checkbox before the value, for combined and compact enable+value display
+    bool state = ImGuiEx::LabelCheck(label, s);
+    bool disabled = *s == false;
+    if (disabled) {
+        format = "";
+        ImGui::BeginDisabled();
+    }
+
+    ImGui::PushID(label);
+    bool result = ImGui::SliderFloat("##SliderFloatCheckbox2", v, v_min, v_max, format, flags);
+    if (ImGui::IsItemDeactivatedAfterEdit())
+        *s = true;
+    ImGui::PopID();
+
+    if (disabled)
+        ImGui::EndDisabled();
+    return state || result;
+}
+
 bool SliderFloat2(ImStrv label, float v[2], float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
@@ -698,14 +682,18 @@ bool SliderScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int comp
 
 bool SliderScalarStateN(ImStrv label, bool* p_state, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
 {
-    bool state_result = ImGuiEx::Label(label, p_state);
-
-    if (!*p_state)
+    bool state_result = ImGuiEx::LabelCheck(label, p_state);
+    bool disabled = *p_state == false;
+    if (disabled) {
+        format = "";
         ImGui::BeginDisabled();
+    }
+
     ImGui::PushID(label);
     bool result = ImGui::SliderScalarN("##SliderScalarN", data_type, p_data, components, p_min, p_max, format, flags);
     ImGui::PopID();
-    if (!*p_state)
+
+    if (disabled)
         ImGui::EndDisabled();
 
     return state_result || result;
@@ -802,28 +790,24 @@ bool InputFloat4(ImStrv label, float v[4], const char* format, ImGuiInputTextFla
     return result;
 }
 
-bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     //shows checkbox before the value, for combined and compact enable+value display
-    ImGuiEx::Label(label);
-    float width = ImGui::CalcItemWidth();
+    bool state = ImGuiEx::LabelCheck(label, s);
+    bool disabled = *s == false;
+    if (disabled) {
+        format = "";
+        ImGui::BeginDisabled();
+    }
 
     ImGui::PushID(label);
-    bool state = ImGui::Checkbox("##InputFloatCheckbox1", s);
-    if (*s == false)
-        format = "";
-
-    const ImGuiStyle& style = ImGui::GetStyle();
-    const float button_size = ImGui::GetFrameHeight();
-    ImGui::SetNextItemWidth(width - button_size - style.ItemInnerSpacing.x);
-
-    ImGui::SameLine(0, style.ItemInnerSpacing.x);
-
     bool result = ImGui::InputFloat("##InputFloatCheckbox2", v, step, step_fast, format, flags);
-    if (ImGui::IsItemDeactivatedAfterEdit()) {
+    if (ImGui::IsItemDeactivatedAfterEdit())
         *s = true;
-    }
     ImGui::PopID();
+
+    if (disabled)
+        ImGui::EndDisabled();
     return state || result;
 }
 

@@ -260,7 +260,7 @@ namespace ImGuiEx
 {
 
 IMGUI_API void Label(ImStrv label);
-IMGUI_API bool Label(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling 
+IMGUI_API bool LabelCheck(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling 
 
 IMGUI_API bool Checkbox(ImStrv label, bool* v);
 IMGUI_API bool CheckboxRightAlign(ImStrv label, bool* v); // label+checkbox aligned to the right window edge
@@ -313,7 +313,8 @@ IMGUI_API bool InputDouble4(ImStrv label, double v[4], const char* format = "%.6
 IMGUI_API bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 
-IMGUI_API bool InputFloatCheckbox(ImStrv label, float* v, bool* s, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
+IMGUI_API bool SliderFloatCheckbox(ImStrv label, bool* s, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
+IMGUI_API bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool ColorEdit3(ImStrv label, float col[3], ImGuiColorEditFlags flags = 0);
 IMGUI_API bool ColorEdit4(ImStrv label, float col[4], ImGuiColorEditFlags flags = 0);
