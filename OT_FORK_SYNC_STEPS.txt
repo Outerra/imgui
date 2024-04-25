@@ -1,0 +1,9 @@
+1. Clone Imgui via get_imgui.bat
+2. Add 'https://github.com/ocornut/imgui.git' as new remote (lets call it 'ocornut_origin')
+3. Create new branch from 'remotes/ocornut_origin/docking' (lets call it 'sync_branch')
+4. Merge 'remotes/ocornut_origin/features/string_view' branch to 'sync_branch'
+5. Switch to 'docking_and_string_view' branch and pull changes from 'remotes/origin/docking_and_string_view'
+6. Merge 'sync_branch' to 'docking_and_string_view'. Resolve confilcts if needed.
+7. Commit changes
+8. Push 'docking_and_string_view'
+9. Delete 'sync_branch'
