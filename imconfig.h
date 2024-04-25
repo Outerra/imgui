@@ -28,13 +28,13 @@
 
 //---- Don't define obsolete functions/enums/behaviors. Consider enabling from time to time after updating to clean your code of obsolete function/names.
 #define IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87: disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This will be folded into IMGUI_DISABLE_OBSOLETE_FUNCTIONS in a few versions.
+#define IMGUI_DISABLE_OBSOLETE_KEYIO                      // 1.87+ disable legacy io.KeyMap[]+io.KeysDown[] in favor io.AddKeyEvent(). This is automatically done by IMGUI_DISABLE_OBSOLETE_FUNCTIONS.
 
 //---- Disable all of Dear ImGui or don't implement standard windows/tools.
 // It is very strongly recommended to NOT disable the demo windows and debug tool during development. They are extremely useful in day to day work. Please read comments in imgui_demo.cpp.
 //#define IMGUI_DISABLE                                     // Disable everything: all headers and source files will be empty.
 //#define IMGUI_DISABLE_DEMO_WINDOWS                        // Disable demo windows: ShowDemoWindow()/ShowStyleEditor() will be empty.
-//#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowStackToolWindow() will be empty (this was called IMGUI_DISABLE_METRICS_WINDOW before 1.88).
+//#define IMGUI_DISABLE_DEBUG_TOOLS                         // Disable metrics/debugger and other debug tools: ShowMetricsWindow(), ShowDebugLogWindow() and ShowIDStackToolWindow() will be empty.
 
 //---- Don't implement some functions to reduce linkage requirements.
 //#define IMGUI_DISABLE_WIN32_DEFAULT_CLIPBOARD_FUNCTIONS   // [Win32] Don't implement default clipboard handler. Won't use and link with OpenClipboard/GetClipboardData/CloseClipboard etc. (user32.lib/.a, kernel32.lib/.a)
@@ -50,12 +50,14 @@
 //#define IMGUI_DISABLE_SSE                                 // Disable use of SSE intrinsics even if available
 
 //---- Include imgui_user.h at the end of imgui.h as a convenience
+// May be convenient for some users to only explicitly include vanilla imgui.h and have extra stuff included.
 //#define IMGUI_INCLUDE_IMGUI_USER_H
+//#define IMGUI_USER_H_FILENAME         "my_folder/my_imgui_user.h"
 
 //---- Pack colors to BGRA8 instead of RGBA8 (to avoid converting from one to another)
 //#define IMGUI_USE_BGRA_PACKED_COLOR
 
-//---- Use 32-bit for ImWchar (default is 16-bit) to support unicode planes 1-16. (e.g. point beyond 0xFFFF like emoticons, dingbats, symbols, shapes, ancient languages, etc...)
+//---- Use 32-bit for ImWchar (default is 16-bit) to support Unicode planes 1-16. (e.g. point beyond 0xFFFF like emoticons, dingbats, symbols, shapes, ancient languages, etc...)
 //#define IMGUI_USE_WCHAR32
 
 //---- Avoid multiple STB libraries implementations, or redefine path/filenames to prioritize another version
@@ -130,25 +132,6 @@ template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
         template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
         ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
         ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
-
-//---- Define constructor to convert your string type to ImStrv (which is a non-owning begin/end pair)
-// This will be inlined as part of ImStrv class declaration.
-// This has two benefits: you won't need to use .c_str(), if length is already computed it is faster.
-//#include <string>
-//#include <string_view>
-//#define IM_STR_CLASS_EXTRA    ImStrv(const std::string& s)      { Begin = s.c_str(); End = Begin + s.length(); }
-//#define IM_STR_CLASS_EXTRA    ImStrv(const std::string_view& s) { Begin = s.data(); End = Begin + s.length(); }
-//#define IM_STR_CLASS_EXTRA    ImStrv(const MyString& s)         { Begin = s.Data; End = s.end(); }
-
-//---- Define constructor to convert your string type to ImStrv (which is a non-owning begin/end pair)
-// This will be inlined as part of ImStrv class declaration.
-// This has two benefits: you won't need to use .c_str(), if length is already computed it is faster.
-//#include <string>
-//#include <string_view>
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string& s)       { Begin = s.c_str(); End = Begin + s.length(); }
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string_view& s)  { Begin = s.data(); End = Begin + s.length(); }
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const MyString& s)          { Begin = s.Data; End = s.end(); }
-
 //---- Use 32-bit vertex indices (default is 16-bit) is one way to allow large meshes with more than 64K vertices.
 // Your renderer backend will need to support it (most example renderer backends support both 16/32-bit indices).
 // Another way to allow large meshes while keeping 16-bit indices is to handle ImDrawCmd::VtxOffset in your renderer.
