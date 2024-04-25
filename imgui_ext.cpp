@@ -1474,13 +1474,12 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     if (!temp_input_is_active)
     {
         // Tabbing or CTRL-clicking on Slider turns it into an input box
-        const bool input_requested_by_tabbing = temp_input_allowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
         const bool clicked = hovered && ImGui::IsMouseClicked(0, id);
-        const bool make_active = (input_requested_by_tabbing || clicked || g.NavActivateId == id);
+        const bool make_active = (clicked || g.NavActivateId == id);
         if (make_active && clicked)
             ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);
         if (make_active && temp_input_allowed)
-            if (input_requested_by_tabbing || (clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
+            if ((clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
                 temp_input_is_active = true;
 
         if (make_active && !temp_input_is_active)
@@ -1507,9 +1506,8 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     // Slider behavior
     ImRect grab_bb;
     const bool value_changed = ImGui::SliderBehavior(frame_bb, id, data_type, p_data, p_min, p_max, p_step, format, flags, &grab_bb);
-    if (value_changed) {
+    if (value_changed)
         ImGui::MarkItemEdited(id);
-    }
 
     // Render grab
     if (grab_bb.Max.x > grab_bb.Min.x)
@@ -1520,7 +1518,7 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     const char* value_buf_end = value_buf + ImGui::DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, p_data, format);
     if (g.LogEnabled)
         ImGui::LogSetNextTextDecoration("{", "}");
-    ImGui::RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
+    ImGui::RenderTextClipped(frame_bb.Min, frame_bb.Max, ImStrv(value_buf, value_buf_end), NULL, ImVec2(0.5f, 0.5f));
 
     if (label_size.x > 0.0f)
         ImGui::RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, frame_bb.Min.y + style.FramePadding.y), label);
