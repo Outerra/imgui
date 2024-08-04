@@ -289,10 +289,14 @@ IMGUI_API bool SliderInt(ImStrv label, int* v, int v_min, int v_max, const char*
 IMGUI_API bool SliderInt2(ImStrv label, int v[2], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderInt3(ImStrv label, int v[3], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderInt4(ImStrv label, int v[4], int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderU8(ImStrv label, uint8* v, uint8 v_min, uint8 v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderU8Vec2(ImStrv label, uint8 v[2], uint8 v_min, uint8 v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderU8Vec3(ImStrv label, uint8 v[3], uint8 v_min, uint8 v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
-IMGUI_API bool SliderU8Vec4(ImStrv label, uint8 v[4], uint8 v_min, uint8 v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8(ImStrv label, uint8* v, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec2(ImStrv label, uint8 v[2], const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec3(ImStrv label, uint8 v[3], const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec4(ImStrv label, uint8 v[4], const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Norm(ImStrv label, uint8* v, const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec2Norm(ImStrv label, uint8 v[2], const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec3Norm(ImStrv label, uint8 v[3], const char* format = NULL, ImGuiSliderFlags flags = 0);
+IMGUI_API bool SliderU8Vec4Norm(ImStrv label, uint8 v[4], const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderScalarStateN(ImStrv label, bool* p_state, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format = NULL, ImGuiSliderFlags flags = 0);
