@@ -2152,7 +2152,7 @@ ImGuiID ImHashStr(ImStrv str, ImGuiID seed)
     ImU32 crc = seed;
     const unsigned char* data = (const unsigned char*)str.Begin;
     const ImU32* crc32_lut = GCrc32LookupTable;
-    if (str.End != NULL)
+    if (str.End != NULL || str.Begin == NULL)
     {
         size_t data_size = str.length();
         while (data_size-- != 0)
