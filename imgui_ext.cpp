@@ -562,6 +562,27 @@ bool SliderFloat(ImStrv label, float* v, float v_min, float v_max, const char* f
     return result;
 }
 
+bool SliderIntCheckbox(ImStrv label, bool* s, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+{
+    //shows checkbox before the value, for combined and compact enable+value display
+    bool state = ImGuiEx::LabelCheck(label, s);
+    bool disabled = *s == false;
+    if (disabled) {
+        format = "";
+        ImGui::BeginDisabled();
+    }
+
+    ImGui::PushID(label);
+    bool result = ImGui::SliderInt("##SliderIntCheckbox", v, v_min, v_max, format, flags);
+    if (ImGui::IsItemDeactivatedAfterEdit())
+        *s = true;
+    ImGui::PopID();
+
+    if (disabled)
+        ImGui::EndDisabled();
+    return state || result;
+}
+
 bool SliderFloatCheckbox(ImStrv label, bool* s, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     //shows checkbox before the value, for combined and compact enable+value display
@@ -573,7 +594,7 @@ bool SliderFloatCheckbox(ImStrv label, bool* s, float* v, float v_min, float v_m
     }
 
     ImGui::PushID(label);
-    bool result = ImGui::SliderFloat("##SliderFloatCheckbox2", v, v_min, v_max, format, flags);
+    bool result = ImGui::SliderFloat("##SliderFloatCheckbox", v, v_min, v_max, format, flags);
     if (ImGui::IsItemDeactivatedAfterEdit())
         *s = true;
     ImGui::PopID();

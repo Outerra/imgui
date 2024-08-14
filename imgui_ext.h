@@ -321,6 +321,7 @@ IMGUI_API bool InputDouble4(ImStrv label, double v[4], const char* format = "%.6
 IMGUI_API bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 IMGUI_API bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step = NULL, const void* p_step_fast = NULL, const char* format = NULL, ImGuiInputTextFlags flags = 0);
 
+IMGUI_API bool SliderIntCheckbox(ImStrv label, bool* s, int* v, int v_min, int v_max, const char* format = "%d", ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderFloatCheckbox(ImStrv label, bool* s, float* v, float v_min, float v_max, const char* format = "%.3f", ImGuiSliderFlags flags = 0);     // adjust format to decorate the value with a prefix or a suffix for in-slider labels or unit display.
 IMGUI_API bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step = 0.0f, float step_fast = 0.0f, const char* format = "%.3f", ImGuiInputTextFlags flags = 0);
 
