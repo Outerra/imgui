@@ -5908,6 +5908,24 @@ void ImGui::DebugNodeInputTextState(ImGuiInputTextState* state)
 // - ColorPickerOptionsPopup() [Internal]
 //-------------------------------------------------------------------------
 
+static ImVec4 recent[10] = {
+    ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1),
+    ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1), ImVec4(0, 0, 0, 1),
+};
+
+static void RecentColorUpdate()
+{
+    //check if already exists
+    for (int i = 1; i < 10; ++i) {
+        if (recent[0] == recent[i])
+            return;
+    }
+
+    for (int i = 9; i > 0; i--) {
+        recent[i] = recent[i - 1];
+    }
+}
+
 bool ImGui::ColorEdit3(ImStrv label, float col[3], ImGuiColorEditFlags flags)
 {
     return ColorEdit4(label, col, flags | ImGuiColorEditFlags_NoAlpha);
@@ -6108,6 +6126,8 @@ bool ImGui::ColorEdit4(ImStrv label, float col[4], ImGuiColorEditFlags flags)
         if (!(flags & ImGuiColorEditFlags_NoOptions))
             OpenPopupOnItemClick("context", ImGuiPopupFlags_MouseButtonRight);
 
+        const ImGuiID id = g.ColorEditCurrentID;
+        static ImGuiID was_open = 0;
         if (BeginPopup("picker"))
         {
             if (g.CurrentWindow->BeginCount == 1)
@@ -6126,6 +6146,13 @@ bool ImGui::ColorEdit4(ImStrv label, float col[4], ImGuiColorEditFlags flags)
                 PopItemFlag();
             }
             EndPopup();
+
+            if (value_changed)
+                was_open = id;
+        }
+        else if (was_open == id) {
+            RecentColorUpdate();
+            was_open = false;
         }
     }
 
@@ -6415,6 +6442,26 @@ bool ImGui::ColorPicker4(ImStrv label, float col[4], ImGuiColorEditFlags flags, 
                 value_changed = true;
             }
         }
+
+        Text("Recent");
+        PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 2));
+
+        int k = 1;
+        ImVec2 rs = {square_sz - 2, square_sz - 2};
+        for (int r = 0; r < 3; ++r) {
+            for (int c = 0; c < 3; ++c, ++k) {
+                PushID(k);
+                if (ColorButton("##rec0", recent[k], 0, rs)) {
+                    memcpy(col, &recent[k], components * sizeof(float));
+                    value_changed = true;
+                }
+                PopID();
+                if (c < 2)
+                    SameLine();
+            }
+        }
+        PopStyleVar();
+
         PopItemFlag();
         PopItemFlag();
         EndGroup();
@@ -6602,6 +6649,10 @@ bool ImGui::ColorPicker4(ImStrv label, float col[4], ImGuiColorEditFlags flags, 
 
     if (g.DisabledStackSize > 0)
         g.Style.Alpha = backup_alpha;
+
+    if (value_changed) {
+        memcpy(&recent[0], col, components * sizeof(float));
+    }
 
     return value_changed;
 }
