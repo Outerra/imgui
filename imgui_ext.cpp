@@ -1513,12 +1513,17 @@ bool InputTextCharstr(ImStrv label, coid::charstr& buf, size_t max_size, ImGuiIn
     return result;
 }
 
-bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, size_t max_size, ImGuiInputTextFlags flags)
+bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
 
-    buf.reserve(max_size);
+    if (buf.ptr() == nullptr)
+    {
+        // buf.ptr_ref() can be nullptr when send to ImGui::InputTextWithHint, so we alloc at least some memory
+        constexpr uint32 default_size = 16;
+        buf.reserve(default_size);
+    }
 
     bool result = ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.reserved(), flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
     if (result)

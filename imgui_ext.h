@@ -366,7 +366,7 @@ IMGUI_API bool ActiveButton(ImStrv label, bool active, const ImVec2& size_arg = 
 IMGUI_API void TextFramed(ImStrv label, const char* fmt, ...) IM_FMTARGS(1);
 
 IMGUI_API bool InputTextCharstr(ImStrv label, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
-IMGUI_API bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, size_t max_size = 0, ImGuiInputTextFlags flags = 0);
+IMGUI_API bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, ImGuiInputTextFlags flags = 0);
 
 IMGUI_API bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format = NULL, ImGuiSliderFlags flags = 0);
 IMGUI_API bool SliderWithArrows(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_steps, const char* format = NULL, ImGuiExSliderFlags flags = 0);
