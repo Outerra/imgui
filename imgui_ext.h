@@ -383,16 +383,30 @@ IMGUI_API void SetItemTooltip(ImGuiHoveredFlags additional_hovered_flags, bool o
 
 struct ImGuiTextureExt
 {
-    enum Etype : unsigned int { rgb = 0, env = 1, ycocg = 2 };
-    Etype type = rgb;
-    unsigned int id = 0;
+    enum Etype {
+        rgb = 0,
+        env = 1,
+        ycocg = 2,
+        recolor = 3,
+    };
+
+    union {
+        struct {
+            Etype type : 8;
+            unsigned int recolor_id : 24;
+            unsigned int id;
+        };
+        unsigned int type_recolor_id;
+        void* tex_id = 0;
+    };
 
     ImGuiTextureExt() {}
 
     ImGuiTextureExt(ImTextureID imTexId) {
-        type = (Etype)(unsigned int)(intptr_t(imTexId) >> 32u);
-        id = (unsigned int)(intptr_t(imTexId) & 0xFFFFffffu);
+        tex_id = imTexId;
     }
 
-    ImTextureID getImTexID() { return (ImTextureID)(intptr_t(type) << 32u | intptr_t(id)); }
+    ImTextureID getImTexID() { return tex_id; }
 };
+
+static_assert(sizeof(ImGuiTextureExt) == sizeof(intptr_t), "mismatch");
