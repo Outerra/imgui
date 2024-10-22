@@ -260,7 +260,7 @@ namespace ImGuiEx
 {
 
 IMGUI_API void Label(ImStrv label);
-IMGUI_API bool LabelCheck(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling 
+IMGUI_API bool LabelCheck(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling
 
 IMGUI_API bool Checkbox(ImStrv label, bool* v);
 IMGUI_API bool CheckboxRightAlign(ImStrv label, bool* v); // label+checkbox aligned to the right window edge
@@ -387,7 +387,10 @@ struct ImGuiTextureExt
         rgb = 0,
         env = 1,
         ycocg = 2,
-        recolor = 3,
+        recolor3 = 3,
+        recolor6 = 6,
+        recolor7 = 7,
+        recolor8 = 8,
     };
 
     union {
@@ -404,6 +407,12 @@ struct ImGuiTextureExt
 
     ImGuiTextureExt(ImTextureID imTexId) {
         tex_id = imTexId;
+    }
+
+    ImGuiTextureExt(uint handle, Etype type, uint recolor_id = 0) {
+        this->id = handle;
+        this->type = type;
+        this->recolor_id = recolor_id;
     }
 
     ImTextureID getImTexID() { return tex_id; }
