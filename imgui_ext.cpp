@@ -1524,9 +1524,7 @@ bool InputTextWithHintCharstr(ImStrv label, ImStrv hint, coid::charstr& buf, ImG
         buf.reserve(default_size);
     }
 
-    bool result = ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.reserved(), flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
-    if (result)
-        buf.correct_size();
+    bool result = ImGui::InputTextWithHint(label, hint, buf.ptr_ref(), buf.reserved(), flags | ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit, &charstr_input_text_callback, &buf);
     ImGui::PopID();
     return result;
 }
