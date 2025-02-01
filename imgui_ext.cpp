@@ -1540,12 +1540,13 @@ void TextFramed(const char* label, const char* fmt, ...)
 
 static int charstr_input_text_callback(ImGuiInputTextCallbackData* data)
 {
-
     coid::charstr* buf = static_cast<coid::charstr*>(data->UserData);
 
-    if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0)
-    {
-        data->Buf = buf->get_buf(data->BufSize - 1);
+    if ((data->EventFlag & ImGuiInputTextFlags_CallbackResize) != 0) {
+        data->Buf = buf->reserve(data->BufSize);
+    }
+    if ((data->EventFlag & ImGuiInputTextFlags_CallbackEdit) != 0) {
+        buf->resize(data->BufTextLen);
     }
 
     return 0;
@@ -1560,9 +1561,7 @@ bool InputTextCharstr(const char* label, coid::charstr& buf, size_t max_size, Im
 
     buf.reserve(max_size);
 
-    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.reserved(), flags | ImGuiInputTextFlags_CallbackResize, &charstr_input_text_callback, &buf);
-    if (result)
-        buf.correct_size();
+    bool result = ImGui::InputText("##InputText", buf.ptr_ref(), buf.reserved(), flags | ImGuiInputTextFlags_CallbackResize | ImGuiInputTextFlags_CallbackEdit, &charstr_input_text_callback, &buf);
     ImGui::PopID();
     return result;
 }
