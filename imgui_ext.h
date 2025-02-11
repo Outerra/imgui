@@ -385,9 +385,10 @@ struct ImGuiTextureExt
 {
     enum Etype {
         rgb = 0,
-        env = 1,
+        env = 1,        //< rgb with exposure
         ycocg = 2,
-        recolor3 = 3,
+
+        recolor3 = 5,
         recolor6 = 6,
         recolor7 = 7,
         recolor8 = 8,
