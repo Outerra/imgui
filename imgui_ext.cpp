@@ -688,7 +688,8 @@ bool SliderU8(ImStrv label, uint8* v, const char* format, ImGuiSliderFlags flags
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::SliderScalar("##SliderU8", ImGuiDataType_U8, v, nullptr, nullptr, format, flags);
+    uint8 min = 0, max = UINT8_MAX;
+    bool result = ImGui::SliderScalar("##SliderU8", ImGuiDataType_U8, v, &min, &max, format, flags);
     ImGui::PopID();
     return result;
 }
@@ -697,7 +698,8 @@ bool SliderU8Vec2(ImStrv label, uint8 v[2], uint8 v_min, uint8 v_max, const char
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::SliderScalarN("##SliderU8Vec2", ImGuiDataType_U8, v, 2, nullptr, nullptr, format, flags);
+    uint8 min = 0, max = UINT8_MAX;
+    bool result = ImGui::SliderScalarN("##SliderU8Vec2", ImGuiDataType_U8, v, 2, &min, &max, format, flags);
     ImGui::PopID();
     return result;
 }
@@ -705,7 +707,8 @@ bool SliderU8Vec3(ImStrv label, uint8 v[3], uint8 v_min, uint8 v_max, const char
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::SliderScalarN("##SliderU8Vec3", ImGuiDataType_U8, v, 3, nullptr, nullptr, format, flags);
+    uint8 min = 0, max = UINT8_MAX;
+    bool result = ImGui::SliderScalarN("##SliderU8Vec3", ImGuiDataType_U8, v, 3, &min, &max, format, flags);
     ImGui::PopID();
     return result;
 }
@@ -713,7 +716,8 @@ bool SliderU8Vec4(ImStrv label, uint8 v[4], uint8 v_min, uint8 v_max, const char
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::SliderScalarN("##SliderU8Vec4", ImGuiDataType_U8, v, 4, nullptr, nullptr, format, flags);
+    uint8 min = 0, max = UINT8_MAX;
+    bool result = ImGui::SliderScalarN("##SliderU8Vec4", ImGuiDataType_U8, v, 4, &min, &max, format, flags);
     ImGui::PopID();
     return result;
 }
