@@ -401,7 +401,7 @@ struct ImGuiTextureExt
             unsigned int id;
         };
         unsigned int type_recolor_id;
-        void* tex_id = 0;
+        ImU64 tex_id = 0;
     };
 
     ImGuiTextureExt() {}
