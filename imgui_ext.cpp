@@ -1362,15 +1362,15 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     return pressed;
 }
 
-bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zeros, ImGuiExInputBitfieldFlags flags)
+bool InputBitfield(ImStrv label, uint* bits, const char** items_terminated_by_zero, ImGuiExInputBitfieldFlags flags)
 {
     int items_count = 0;
-    const char* p = items_separated_by_zeros;
-    while (*p) {
-        p += strlen(p) + 1;
+    const char** pitem = items_terminated_by_zero;
+    while (*pitem) {
+        pitem++;
         items_count++;
     }
-    p = items_separated_by_zeros;
+    pitem = items_terminated_by_zero;
 
     ImGuiEx::Label(label);
 
@@ -1394,7 +1394,7 @@ bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zero
         return false;
 
     bool hovered = false, held = false;
-    bool pressed = !is_readonly && ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
+    bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0) && !is_readonly;
 
     // Render
     const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
@@ -1405,11 +1405,12 @@ bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zero
         const bool item_selected = (*bits & (1u << i));
         const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
 
-        if (label_bb.Contains(g.IO.MousePos) && pressed) {
+        bool has_mouse = label_bb.Contains(g.IO.MousePos);
+        if (has_mouse && pressed) {
             *bits ^= (1u << i);
         }
 
-        bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
+        bool lhovered = hovered && !is_readonly && has_mouse;
         bool lheld = held && lhovered;
         if (lhovered || item_selected) {
             bool lactive = (lheld && lhovered) || (item_selected && !lhovered);
@@ -1420,9 +1421,24 @@ bool InputBitfield(ImStrv label, uint* bits, const char* items_separated_by_zero
         if (g.LogEnabled)
             ImGui::LogSetNextTextDecoration("[", "]");
 
-        const ImVec2 label_text_size = ImGui::CalcTextSize(p, true);
-        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, p, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
-        p += strlen(p) + 1;
+        const char* b = *pitem;
+        const char* e = b;
+        const char* sep = b - 1;
+        for (; *e != 0; ++e) {
+            if (sep < b && *e == '|')
+                sep = e;
+        }
+
+        ImStrv val = ImStrv(b, sep >= b ? sep : e);
+
+        const ImVec2 label_text_size = ImGui::CalcTextSize(val, true);
+        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, val, &label_text_size, style.ButtonTextAlign, &label_bb);
+
+        if (sep >= b && hovered && has_mouse) {
+            ImGui::SetTooltipUnformatted(ImStrv(sep + 1, e));
+        }
+
+        pitem++;
     }
 
     IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
