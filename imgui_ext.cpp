@@ -873,36 +873,36 @@ bool InputFloat(ImStrv label, float* v, float step, float step_fast, const char*
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputFloat("##InputFloat", v, step, step_fast, format, flags);
+    bool result = ImGui::InputFloat("##InputFloat", v, step, step_fast, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputFloat2(ImStrv label, float v[2], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputFloat2("##InputFloat2", v, format, flags);
+    bool result = ImGui::InputFloat2("##InputFloat2", v, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputFloat3(ImStrv label, float v[3], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputFloat3("##InputFloat3", v, format, flags);
+    bool result = ImGui::InputFloat3("##InputFloat3", v, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputFloat4(ImStrv label, float v[4], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags);
+    bool result = ImGui::InputFloat4("##InputFloat4", v, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
@@ -916,95 +916,95 @@ bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step, float step_
     }
 
     ImGui::PushID(label);
-    bool result = ImGui::InputFloat("##InputFloatCheckbox2", v, step, step_fast, format, flags);
+    bool result = ImGui::InputFloat("##InputFloatCheckbox2", v, step, step_fast, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     if (ImGui::IsItemDeactivatedAfterEdit())
         *s = true;
     ImGui::PopID();
 
     if (disabled)
         ImGui::EndDisabled();
-    return state || result;
+    return state || ((flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result);
 }
 
 bool InputInt(ImStrv label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputInt("##InputInt", v, step, step_fast, flags);
+    bool result = ImGui::InputInt("##InputInt", v, step, step_fast, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputInt2(ImStrv label, int v[2], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputInt2("##InputInt2", v, flags);
+    bool result = ImGui::InputInt2("##InputInt2", v, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputInt3(ImStrv label, int v[3], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputInt3("##InputInt3", v, flags);
+    bool result = ImGui::InputInt3("##InputInt3", v, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputInt4(ImStrv label, int v[4], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputInt4("##InputInt4", v, flags);
+    bool result = ImGui::InputInt4("##InputInt4", v, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputDouble(ImStrv label, double* v, double step, double step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputDouble("##InputDouble", v, step, step_fast, format, flags);
+    bool result = ImGui::InputDouble("##InputDouble", v, step, step_fast, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputDouble3(ImStrv label, double v[3], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 3, NULL, NULL, format, flags);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 3, NULL, NULL, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputDouble4(ImStrv label, double v[4], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 4, NULL, NULL, format, flags);
+    bool result = ImGui::InputScalarN("##InputDouble", ImGuiDataType_Double, v, 4, NULL, NULL, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputScalar("##InputScalar", data_type, p_data, p_step, p_step_fast, format, flags);
+    bool result = ImGui::InputScalar("##InputScalar", data_type, p_data, p_step, p_step_fast, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
-    bool result = ImGui::InputScalarN("##InputScalarN", data_type, p_data, components, p_step, p_step_fast, format, flags);
+    bool result = ImGui::InputScalarN("##InputScalarN", data_type, p_data, components, p_step, p_step_fast, format, flags & ~ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::PopID();
-    return result;
+    return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
 
