@@ -1288,7 +1288,8 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     }
     p = items_separated_by_zeros;
 
-    ImGuiEx::Label(label);
+    if (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#'))
+        ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
@@ -1354,7 +1355,8 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     if (*current_item < 0 || *current_item >= items_count)
         *current_item = 0;
 
-    ImGuiEx::Label(label);
+    if (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#'))
+        ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
