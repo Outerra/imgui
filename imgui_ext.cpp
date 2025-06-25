@@ -1352,9 +1352,6 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
         items_count++;
     }
 
-    if (*current_item < 0 || *current_item >= items_count)
-        *current_item = 0;
-
     if (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#'))
         ImGuiEx::Label(label);
 
