@@ -410,7 +410,7 @@ namespace ImGuiEx
 void Label(ImStrv label, bool force_empty)
 {
     if (force_empty || (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#')))
-        LabelCheck(label, nullptr);
+    LabelCheck(label, nullptr);
 }
 
 bool LabelCheck(ImStrv label, bool* checkbox)
@@ -1289,7 +1289,9 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     }
     p = items_separated_by_zeros;
 
-    ImGuiEx::Label(label);
+    bool has_label = !label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#');
+    if (has_label)
+        ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
@@ -1352,7 +1354,9 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
         items_count++;
     }
 
-    ImGuiEx::Label(label);
+    bool has_label = !label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#');
+    if (has_label)
+        ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
