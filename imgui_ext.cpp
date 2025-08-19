@@ -1294,7 +1294,7 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 size(has_label ? ImGui::CalcItemWidth() : 2.0f * style.FramePadding.x, g.FontSize + 2.0f * style.FramePadding.y);
     const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
 
     ImVec2 pos = window->DC.CursorPos;
@@ -1357,13 +1357,13 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
     const ImGuiID id = window->GetID(label);
-    const ImVec2 size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
-    const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
+    const ImVec2 widget_size(ImGui::CalcItemWidth(), g.FontSize + 2.0f * style.FramePadding.y);
+    const ImVec2 item_size = ImVec2(widget_size.x / items_count, widget_size.y);
 
     ImVec2 pos = window->DC.CursorPos;
 
-    const ImRect bb(pos, pos + size);
-    ImGui::ItemSize(size, style.FramePadding.y);
+    const ImRect bb(pos, pos + widget_size);
+    ImGui::ItemSize(widget_size, style.FramePadding.y);
     if (!ImGui::ItemAdd(bb, id))
         return false;
 
@@ -1378,9 +1378,10 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
     for (int i = 0; i < items_count; ++i) {
         int item = reverse ? items_count - 1 - i : i;
         const bool item_selected = (item == *current_item);
-        const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
+        const ImRect label_bb(bb.Min + ImVec2(i * item_size.x, 0), bb.Min + ImVec2((i + 1) * item_size.x, item_size.y));
 
-        if (label_bb.Contains(g.IO.MousePos) && pressed) {
+        bool has_mouse = label_bb.Contains(g.IO.MousePos);
+        if (has_mouse && pressed) {
             *current_item = item;
         }
 
@@ -1388,11 +1389,11 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
         if (disabled)
             ImGui::BeginDisabled();
 
-        bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
-        bool lheld = held && lhovered;
-        if (lhovered || item_selected) {
-            bool lactive = (lheld && lhovered) || (item_selected && !lhovered);
-            const ImU32 label_col = ImGui::GetColorU32(lactive ? ImGuiCol_ButtonActive : lhovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
+        bool item_hovered = hovered && has_mouse;
+        bool item_held = held && item_hovered;
+        if (item_hovered || item_selected) {
+            bool item_active = item_held || item_selected;
+            const ImU32 label_col = ImGui::GetColorU32(item_active ? ImGuiCol_ButtonActive : item_hovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
             ImGui::RenderFrame(label_bb.Min, label_bb.Max, label_col, false, style.FrameRounding);
         }
 
@@ -1400,10 +1401,10 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
             ImGui::LogSetNextTextDecoration("[", "]");
 
         const char* text = items_terminated_by_zero[item];
-        const ImVec2 label_text_size = ImGui::CalcTextSize(text, true);
-        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, text, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
+        const ImVec2 item_text_size = ImGui::CalcTextSize(text, true);
+        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, text, NULL, &item_text_size, style.ButtonTextAlign, &label_bb);
 
-        if (lhovered && tooltips && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
+        if (item_hovered && tooltips && ImGui::IsItemHovered(ImGuiHoveredFlags_DelayNormal))
             ImGui::SetTooltip(tooltips[item]);
 
         if (disabled)
