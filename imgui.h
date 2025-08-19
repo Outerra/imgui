@@ -326,6 +326,7 @@ struct ImVec4
 
 // String view (non-owning pair of begin/end pointers, not necessarily zero-terminated)
 // ImStrv are used as function parameters instead of passing a pair of const char*.
+// Note - printf formating as ("%.*s", len, ptr)
 struct ImStrv
 {
     const char* Begin;
