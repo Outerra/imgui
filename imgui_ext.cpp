@@ -1793,4 +1793,11 @@ void SetItemTooltip(ImGuiHoveredFlags additional_hovered_flags, bool override_pr
     va_end(args);
 }
 
+//-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
+void Image(::ImGuiExImageParams params)
+{
+    ImGui::Image(ImTextureID(params), params._size, params._uv0, params._uv1);
+}
+
 }
