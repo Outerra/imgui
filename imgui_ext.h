@@ -259,7 +259,7 @@ IMGUI_API void SetTooltipUnformatted(ImStrv text);
 namespace ImGuiEx
 {
 
-IMGUI_API void Label(ImStrv label, bool force_empty = false);
+IMGUI_API bool Label(ImStrv label, bool force_empty = false);
 IMGUI_API bool LabelCheck(ImStrv label, bool* checkbox); //label with right aligned checkbox for enabling/disabling
 
 IMGUI_API bool Checkbox(const char* label, bool* v);
