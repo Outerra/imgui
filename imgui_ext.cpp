@@ -407,10 +407,13 @@ void SetTooltipUnformatted(ImStrv text)
 namespace ImGuiEx
 {
 
-void Label(ImStrv label, bool force_empty)
+bool Label(ImStrv label, bool force_empty)
 {
-    if (force_empty || (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#')))
-    LabelCheck(label, nullptr);
+    if (force_empty || (!label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#'))) {
+        LabelCheck(label, nullptr);
+        return true;
+    }
+    return false;
 }
 
 bool LabelCheck(ImStrv label, bool* checkbox)
@@ -1289,9 +1292,7 @@ bool MultistateToggleButton(const char* label, int* current_item, const char* it
     }
     p = items_separated_by_zeros;
 
-    bool has_label = !label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#');
-    if (has_label)
-        ImGuiEx::Label(label);
+    bool has_label = ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
@@ -1356,7 +1357,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
 
     bool has_label = !label.empty() && !(label.length() >= 2 && label.Begin[0] == '#' && label.Begin[1] == '#');
     if (has_label)
-        ImGuiEx::Label(label);
+    ImGuiEx::Label(label);
 
     ImGuiContext& g = *GImGui;
     const ImGuiStyle& style = g.Style;
