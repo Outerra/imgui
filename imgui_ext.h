@@ -52,17 +52,6 @@ enum ImGuiExSliderFlags_
     ImGuiExSliderFlags_CoreFlagsMask_         = (1 << 16) - 1 // Mask for filtering flags to send to core imgui widget
 };
 
-class imgui_texture_wrapper;
-struct ImGuiExImageParams
-{
-    imgui_texture_wrapper* _texture_wrapper_ptr = nullptr;
-    ImVec2 _size = {0.f, 0.f};
-    ImVec2 _uv0 = { 0.f, 0.f };
-    ImVec2 _uv1 = { 1.f, 1.f };
-
-    operator ImTextureID() const { return reinterpret_cast<ImTextureID>(_texture_wrapper_ptr); };
-};
-
 namespace ImGui
 {
 
@@ -389,7 +378,5 @@ IMGUI_API bool SliderWithArrowsUInt(ImStrv label, uint* v, uint v_min, uint v_ma
 /// @param override_previous - override previous tooltips for hovered item (concate otherwise)
 /// @param fmt, ... - printf params
 IMGUI_API void SetItemTooltip(ImGuiHoveredFlags additional_hovered_flags, bool override_previous, const char* fmt, ...);
-
-IMGUI_API void Image(::ImGuiExImageParams params);
 
 }
