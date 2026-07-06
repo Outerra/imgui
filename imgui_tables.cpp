@@ -312,13 +312,13 @@ ImGuiTable* ImGui::TableFindByID(ImGuiID id)
 }
 
 // Read about "TABLE SIZING" at the top of this file.
-bool    ImGui::BeginTable(const char* str_id, int columns_count, ImGuiTableFlags flags, const ImVec2& outer_size, float inner_width)
+bool    ImGui::BeginTable(ImStrv str_id, int columns_count, ImGuiTableFlags flags, const ImVec2& outer_size, float inner_width)
 {
     ImGuiID id = GetID(str_id);
     return BeginTableEx(str_id, id, columns_count, flags, outer_size, inner_width);
 }
 
-bool    ImGui::BeginTableEx(const char* name, ImGuiID id, int columns_count, ImGuiTableFlags flags, const ImVec2& outer_size, float inner_width)
+bool    ImGui::BeginTableEx(ImStrv name, ImGuiID id, int columns_count, ImGuiTableFlags flags, const ImVec2& outer_size, float inner_width)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* outer_window = GetCurrentWindow();
@@ -1734,7 +1734,7 @@ static void TableSetupColumnApply(ImGuiTable* table, int idx, ImGuiID id, ImS16 
     column->InitStretchWeightOrWidth = init_width_or_weight;
 }
 
-void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, float init_width_or_weight, ImGuiID user_data)
+void ImGui::TableSetupColumn(ImStrv label, ImGuiTableColumnFlags flags, float init_width_or_weight, ImGuiID user_data)
 {
     ImGuiContext& g = *GImGui;
     ImGuiTable* table = g.CurrentTable;
@@ -1746,12 +1746,14 @@ void ImGui::TableSetupColumn(const char* label, ImGuiTableColumnFlags flags, flo
     // Store name (append with zero-terminator in contiguous buffer)
     // FIXME: If we recorded the number of \n in names we could compute header row height
     ImS16 name_offset = -1;
-    if (label != NULL && label[0] != 0)
+    if (!label.empty())
     {
+        char zero_terminator = 0;
         name_offset = (ImS16)table->ColumnsNames.size();
-        table->ColumnsNames.append(label, label + ImStrlen(label) + 1);
+        table->ColumnsNames.append(label);
+        table->ColumnsNames.append(ImStrv(&zero_terminator, &zero_terminator + 1));
     }
-    const ImGuiID column_id = (label != NULL && label[0] != 0) ? ImHashStr(label) : 0;
+    const ImGuiID column_id = label ? ImHashStr(label) : 0;
 
     // When ID changed or a column moved: defer the request until layout where we will process full reconcile.
     const int column_idx = table->DeclColumnsCount++;
@@ -3269,7 +3271,7 @@ float ImGui::TableGetHeaderAngledMaxLabelWidth()
     for (int column_n = 0; column_n < table->ColumnsCount; column_n++)
         if (IM_BITARRAY_TESTBIT(table->EnabledMaskByIndex, column_n))
             if (table->Columns[column_n].Flags & ImGuiTableColumnFlags_AngledHeader)
-                width = ImMax(width, CalcTextSize(TableGetColumnName(table, column_n), NULL, true).x);
+                width = ImMax(width, CalcTextSize(TableGetColumnName(table, column_n), true).x);
     return width + g.Style.CellPadding.y * 2.0f; // Swap padding
 }
 
@@ -3321,7 +3323,7 @@ void ImGui::TableHeadersRow()
 // Emit a column header (text + optional sort order)
 // We cpu-clip text here so that all columns headers can be merged into a same draw call.
 // Note that because of how we cpu-clip and display sorting indicators, you _cannot_ use SameLine() after a TableHeader()
-void ImGui::TableHeader(const char* label)
+void ImGui::TableHeader(ImStrv label)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
@@ -3335,10 +3337,11 @@ void ImGui::TableHeader(const char* label)
     ImGuiTableColumn* column = &table->Columns[column_n];
 
     // Label
-    if (label == NULL)
+    if (!label)
         label = "";
-    const char* label_end = FindRenderedTextEnd(label);
-    ImVec2 label_size = CalcTextSize(label, label_end, false);
+    ImGuiID id = window->GetID(label);
+    const ImStrv label_for_display(label.Begin, FindRenderedTextEnd(label));
+    const ImVec2 label_size = CalcTextSize(label_for_display, false);
     ImVec2 label_pos = window->DC.CursorPos;
 
     // If we already got a row height, there's use that.
@@ -3370,7 +3373,6 @@ void ImGui::TableHeader(const char* label)
     column->ContentMaxXHeadersIdeal = ImMax(column->ContentMaxXHeadersIdeal, max_pos_x);
 
     // Keep header highlighted when context menu is open.
-    ImGuiID id = window->GetID(label);
     ImRect bb(cell_r.Min.x, cell_r.Min.y, cell_r.Max.x, ImMax(cell_r.Max.y, cell_r.Min.y + label_height + g.Style.CellPadding.y * 2.0f));
     ItemSize(ImVec2(0.0f, label_height)); // Don't declare unclipped width, it'll be fed ContentMaxPosHeadersIdeal
     if (!ItemAdd(bb, id))
@@ -3450,11 +3452,11 @@ void ImGui::TableHeader(const char* label)
     // Render clipped label. Clipping here ensure that in the majority of situations, all our header cells will
     // be merged into a single draw call.
     //window->DrawList->AddCircleFilled(ImVec2(ellipsis_max, label_pos.y), 40, IM_COL32_WHITE);
-    RenderTextEllipsis(window->DrawList, label_pos, ImVec2(ellipsis_max, bb.Max.y), ellipsis_max, label, label_end, &label_size);
+    RenderTextEllipsis(window->DrawList, label_pos, ImVec2(ellipsis_max, bb.Max.y), ellipsis_max, label_for_display, &label_size);
 
     const bool text_clipped = label_size.x > (ellipsis_max - label_pos.x);
     if (text_clipped && hovered && g.ActiveId == 0)
-        SetItemTooltip("%.*s", (int)(label_end - label), label);
+        SetItemTooltip("%.*s", (int)(label_for_display.End - label_for_display.Begin), label_for_display.Begin);
 
     // We don't use BeginPopupContextItem() because we want the popup to stay up even after the column is hidden
     if (IsPopupOpenRequestForItem(ImGuiPopupFlags_None, id))
@@ -3575,10 +3577,10 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
                 // Draw label
                 // - First draw at an offset where RenderTextXXX() function won't meddle with applying current ClipRect, then transform to final offset.
                 // - Handle multiple lines manually, as we want each lines to follow on the horizontal border, rather than see a whole block rotated.
-                const char* label_name = TableGetColumnName(table, column_n);
-                const char* label_name_end = FindRenderedTextEnd(label_name);
+                const char* label_name_s = TableGetColumnName(table, column_n);
+                ImStrv label_name(label_name_s, FindRenderedTextEnd(label_name_s));
                 const float line_off_step_x = (g.FontSize / -sin_a);
-                const int label_lines = ImTextCountLines(label_name, label_name_end);
+                const int label_lines = ImTextCountLines(label_name);
 
                 // Left<>Right alignment
                 float line_off_curr_x = flip_label ? (label_lines - 1) * line_off_step_x : 0.0f;
@@ -3588,20 +3590,20 @@ void ImGui::TableAngledHeadersRowEx(ImGuiID row_id, float angle, float max_label
                 // Register header width
                 column->ContentMaxXHeadersUsed = column->ContentMaxXHeadersIdeal = column->WorkMinX + ImCeil(label_lines * line_off_step_x - line_off_for_align_x);
 
-                while (label_name < label_name_end)
+                while (label_name.Begin < label_name.End)
                 {
-                    const char* label_name_eol = strchr(label_name, '\n');
+                    const char* label_name_eol = ImStrchrRange(label_name.Begin, label_name.End, '\n');
                     if (label_name_eol == NULL)
-                        label_name_eol = label_name_end;
+                        label_name_eol = label_name.End;
 
                     // FIXME: Individual line clipping for right-most column is broken for negative angles.
-                    ImVec2 label_size = CalcTextSize(label_name, label_name_eol);
+                    ImVec2 label_size = CalcTextSize(ImStrv(label_name.Begin, label_name_eol));
                     float clip_width = max_label_width - padding.y; // Using padding.y*2.0f would be symmetrical but hide more text.
                     float clip_height = ImMin(label_size.y, column->ClipRect.Max.x - column->WorkMinX - line_off_curr_x);
                     ImRect clip_r(window->ClipRect.Min, window->ClipRect.Min + ImVec2(clip_width, clip_height));
                     int vtx_idx_begin = draw_list->_VtxCurrentIdx;
                     PushStyleColor(ImGuiCol_Text, request->TextColor);
-                    RenderTextEllipsis(draw_list, clip_r.Min, clip_r.Max, clip_r.Max.x, label_name, label_name_eol, &label_size);
+                    RenderTextEllipsis(draw_list, clip_r.Min, clip_r.Max, clip_r.Max.x, ImStrv(label_name.Begin, label_name_eol), &label_size);
                     PopStyleColor();
                     int vtx_idx_end = draw_list->_VtxCurrentIdx;
 
@@ -3674,13 +3676,13 @@ bool ImGui::TableBeginContextMenuPopup(ImGuiTable* table)
 }
 
 // FIXME: Copied from MenuItem() for the purpose of being able to pass _SelectOnRelease (#9312)
-static bool MenuItemForColumnReorder(const char* label, bool selected, bool enabled)
+static bool MenuItemForColumnReorder(ImStrv label, bool selected, bool enabled)
 {
     using namespace ImGui;
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = g.CurrentWindow;
 
-    ImVec2 label_size = CalcTextSize(label, NULL, true);
+    ImVec2 label_size = CalcTextSize(label, true);
     ImGuiMenuColumns* offsets = &window->DC.MenuColumns;
     float checkmark_w = IM_TRUNC(g.FontSize * 1.20f);
     float min_w = offsets->DeclColumns(0.0f, label_size.x, 0.0f, checkmark_w); // Feedback for next frame
@@ -4654,7 +4656,7 @@ ImGuiOldColumns* ImGui::FindOrCreateColumns(ImGuiWindow* window, ImGuiID id)
     return columns;
 }
 
-ImGuiID ImGui::GetColumnsID(const char* str_id, int columns_count)
+ImGuiID ImGui::GetColumnsID(ImStrv str_id, int columns_count)
 {
     ImGuiWindow* window = GetCurrentWindow();
 
@@ -4667,7 +4669,7 @@ ImGuiID ImGui::GetColumnsID(const char* str_id, int columns_count)
     return id;
 }
 
-void ImGui::BeginColumns(const char* str_id, int columns_count, ImGuiOldColumnFlags flags)
+void ImGui::BeginColumns(ImStrv str_id, int columns_count, ImGuiOldColumnFlags flags)
 {
     ImGuiContext& g = *GImGui;
     ImGuiWindow* window = GetCurrentWindow();
@@ -4878,7 +4880,7 @@ void ImGui::EndColumns()
     NavUpdateCurrentWindowIsScrollPushableX();
 }
 
-void ImGui::Columns(int columns_count, const char* id, bool borders)
+void ImGui::Columns(int columns_count, ImStrv id, bool borders)
 {
     ImGuiWindow* window = GetCurrentWindow();
     IM_ASSERT(columns_count >= 1);
