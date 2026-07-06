@@ -48,9 +48,9 @@ void StyleColorsOuterra(ImGuiStyle* dst)
     colors[ImGuiCol_ResizeGripActive] = ImVec4(0.37f, 0.37f, 0.37f, 1.00f);
     colors[ImGuiCol_Tab] = ImVec4(0.27f, 0.27f, 0.27f, 0.40f);
     colors[ImGuiCol_TabHovered] = ImVec4(0.38f, 0.38f, 0.38f, 1.00f);
-    colors[ImGuiCol_TabActive] = ImVec4(1.00f, 0.50f, 0.00f, 1.00f);
-    colors[ImGuiCol_TabUnfocused] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
-    colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
+    colors[ImGuiCol_TabSelected] = ImVec4(1.00f, 0.50f, 0.00f, 1.00f);
+    colors[ImGuiCol_TabDimmed] = ImVec4(0.17f, 0.17f, 0.17f, 1.00f);
+    colors[ImGuiCol_TabDimmedSelected] = ImVec4(0.26f, 0.26f, 0.26f, 1.00f);
     colors[ImGuiCol_DockingPreview] = ImVec4(0.55f, 0.55f, 0.55f, 1.00f);
     colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
@@ -64,7 +64,7 @@ void StyleColorsOuterra(ImGuiStyle* dst)
     colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.02f);
     colors[ImGuiCol_TextSelectedBg] = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
     colors[ImGuiCol_DragDropTarget] = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
-    colors[ImGuiCol_NavHighlight] = ImVec4(0.78f, 0.88f, 1.00f, 1.00f);
+    colors[ImGuiCol_NavCursor] = ImVec4(0.78f, 0.88f, 1.00f, 1.00f);
     colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
     colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.44f, 0.44f, 0.44f, 0.35f);
@@ -489,7 +489,7 @@ bool CheckboxRightAlign(ImStrv label, bool* v)
 {
     const ImGuiStyle& style = ImGui::GetStyle();
     float text_width = ImGui::CalcTextSize(label).x;
-    float pos = ImGui::GetWindowContentRegionMax().x - (text_width + style.ItemSpacing.x + ImGui::GetFrameHeight());
+    float pos = ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x - (text_width + style.ItemSpacing.x + ImGui::GetFrameHeight());
 
     ImGui::SetCursorPosX(pos);
     ImGui::TextUnformatted(label);
@@ -1278,71 +1278,6 @@ void EndListBox()
     ImGui::EndListBox();
 }
 
-bool MultistateToggleButton(const char* label, int* current_item, const char* items_separated_by_zeros)
-{
-    ImGuiWindow* window = ImGui::GetCurrentWindow();
-    if (window->SkipItems)
-        return false;
-
-    int items_count = 0;
-    const char* p = items_separated_by_zeros;
-    while (*p) {
-        p += strlen(p) + 1;
-        items_count++;
-    }
-    p = items_separated_by_zeros;
-
-    bool has_label = ImGuiEx::Label(label);
-
-    ImGuiContext& g = *GImGui;
-    const ImGuiStyle& style = g.Style;
-    const ImGuiID id = window->GetID(label);
-    const ImVec2 size(has_label ? ImGui::CalcItemWidth() : 2.0f * style.FramePadding.x, g.FontSize + 2.0f * style.FramePadding.y);
-    const ImVec2 label_size = ImVec2(size.x / items_count, size.y);
-
-    ImVec2 pos = window->DC.CursorPos;
-
-    const ImRect bb(pos, pos + size);
-    ImGui::ItemSize(size, style.FramePadding.y);
-    if (!ImGui::ItemAdd(bb, id))
-        return false;
-
-    bool hovered, held;
-    bool pressed = ImGui::ButtonBehavior(bb, id, &hovered, &held, 0);
-
-    // Render
-    const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
-    ImGui::RenderNavHighlight(bb, id);
-    ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
-
-    for (int i = 0; i < items_count; ++i) {
-        const bool item_selected = (i == *current_item);
-        const ImRect label_bb(bb.Min + ImVec2(i * label_size.x, 0), bb.Min + ImVec2((i + 1) * label_size.x, label_size.y));
-
-        if (label_bb.Contains(g.IO.MousePos) && pressed) {
-            *current_item = i;
-        }
-
-        bool lhovered = hovered && label_bb.Contains(g.IO.MousePos);
-        bool lheld = held && lhovered;
-        if (lhovered || item_selected) {
-            bool lactive = (lheld && lhovered) || (item_selected && !lhovered);
-            const ImU32 label_col = ImGui::GetColorU32(lactive ? ImGuiCol_ButtonActive : lhovered ? ImGuiCol_ButtonHovered : ImGuiCol_Button);
-            ImGui::RenderFrame(label_bb.Min, label_bb.Max, label_col, false, style.FrameRounding);
-        }
-
-        if (g.LogEnabled)
-            ImGui::LogSetNextTextDecoration("[", "]");
-
-        const ImVec2 label_text_size = ImGui::CalcTextSize(p, NULL, true);
-        ImGui::RenderTextClipped(label_bb.Min + style.FramePadding, label_bb.Max - style.FramePadding, p, NULL, &label_text_size, style.ButtonTextAlign, &label_bb);
-        p += strlen(p) + 1;
-    }
-
-    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, g.LastItemData.StatusFlags);
-    return pressed;
-}
-
 bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_terminated_by_zero, const char** tooltips, uint inactive_mask, bool reverse)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1377,7 +1312,7 @@ bool MultistateToggleButton(ImStrv label, int* current_item, const char** items_
 
     // Render
     const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
-    ImGui::RenderNavHighlight(bb, id);
+    ImGui::RenderNavCursor(bb, id);
     ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
 
     for (int i = 0; i < items_count; ++i) {
@@ -1456,7 +1391,7 @@ bool InputBitfield(ImStrv label, uint* bits, const char** items_terminated_by_ze
 
     // Render
     const ImU32 col = ImGui::GetColorU32(ImGuiCol_Button);
-    ImGui::RenderNavHighlight(bb, id);
+    ImGui::RenderNavCursor(bb, id);
     ImGui::RenderFrame(bb.Min, bb.Max, col, true, style.FrameRounding);
 
     for (int i = 0; i < items_count; ++i) {
