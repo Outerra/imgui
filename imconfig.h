@@ -107,47 +107,20 @@
 
 //---- Define constructor and implicit cast operators to convert back<>forth between your math types and ImVec2/ImVec4.
 // This will be inlined as part of ImVec2 and ImVec4 class declarations.
-
-#define IM_VEC2_CLASS_EXTRA                                                 \
-        ImVec2 operator+(const ImVec2& rhs) { return ImVec2(x+rhs.x, y+rhs.y); }    \
-        ImVec2 operator-(const ImVec2& rhs) { return ImVec2(x-rhs.x, y-rhs.y); }    \
-        ImVec2 operator*(const ImVec2& rhs) { return ImVec2(x*rhs.x, y*rhs.y); }    \
-        ImVec2 operator/(const ImVec2& rhs) { return ImVec2(x/rhs.x, y/rhs.y); }
 /*
+#define IM_VEC2_CLASS_EXTRA                                                     \
+        IM_NODEBUGSTEP constexpr inline ImVec2(const MyVec2& f) : x(f.x), y(f.y) {}    \
+        IM_NODEBUGSTEP inline operator MyVec2() const { return MyVec2(x,y); }
+
 #define IM_VEC4_CLASS_EXTRA                                                                     \
         IM_NODEBUGSTEP constexpr inline ImVec4(const MyVec4& f) : x(f.x), y(f.y), z(f.z), w(f.w) {}    \
         IM_NODEBUGSTEP inline operator MyVec4() const { return MyVec4(x,y,z,w); }
 */
 //---- ...Or use Dear ImGui's own basic math operators in every file including imgui.h:
-//#ifndef IMGUI_DEFINE_MATH_OPERATORS
-//#define IMGUI_DEFINE_MATH_OPERATORS
-//#endif
+#ifndef IMGUI_DEFINE_MATH_OPERATORS
+#define IMGUI_DEFINE_MATH_OPERATORS
+#endif
 //---- ...Or manually '#define IMGUI_DEFINE_MATH_OPERATORS' before '#include "imgui.h"' to use from one file.
-
-//---- Define constructor to convert your string type to ImStrv (which is a non-owning begin/end pair)
-// This will be inlined as part of ImStrv class declaration.
-// This has two benefits: you won't need to use .c_str(), if length is already computed it is faster.
-//#include <string>
-//#include <string_view>
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string& s)       { Begin = s.c_str(); End = Begin + s.length(); }
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const std::string_view& s)  { Begin = s.data(); End = Begin + s.length(); }
-//#define IM_STRV_CLASS_EXTRA    ImStrv(const MyString& s)          { Begin = s.Data; End = s.end(); }
-
-#include <comm/token.h>
-#include <comm/str.h>
-
-//used to detect char ptr types
-template<typename T, typename R> struct is_char_ptr {};
-template<typename R> struct is_char_ptr<const char*, R> { typedef R type; };
-template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
-
-#define IM_STRV_CLASS_EXTRA \
-    constexpr ImStrv(std::nullptr_t)    { Begin = End = NULL; }\
-        template <int N> constexpr ImStrv(const char(&str)[N]) : Begin(str), End(str + N - 1) { DASSERT(str[N-1] == 0); } /*String literal constructor, optimization to have fast literal strings*/\
-        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + strnlen(str, N)) {} /*String buffer constructor, optimization to have fast literal strings*/\
-        template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
-        ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
-        ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
 
 //---- Use 32-bit vertex indices (default is 16-bit) is one way to allow large meshes with more than 64K vertices.
 // Your renderer backend will need to support it (most example renderer backends support both 16/32-bit indices).
@@ -180,3 +153,19 @@ namespace ImGui
     void MyFunction(const char* name, MyMatrix44* mtx);
 }
 */
+
+#include <comm/token.h>
+#include <comm/str.h>
+
+//used to detect char ptr types
+template<typename T, typename R> struct is_char_ptr {};
+template<typename R> struct is_char_ptr<const char*, R> { typedef R type; };
+template<typename R> struct is_char_ptr<char*, R> { typedef R type; };
+
+#define IM_STRV_CLASS_EXTRA \
+    constexpr ImStrv(std::nullptr_t)    { Begin = End = NULL; }\
+        template <int N> constexpr ImStrv(const char(&str)[N]) : Begin(str), End(str + N - 1) { DASSERT(str[N-1] == 0); } /*String literal constructor, optimization to have fast literal strings*/\
+        template <int N> constexpr ImStrv(char(&str)[N]) : Begin(str), End(str + strnlen(str, N)) {} /*String buffer constructor, optimization to have fast literal strings*/\
+        template<typename T> ImStrv(T b, typename is_char_ptr<T, ImStrv*>::type = 0) { Begin = b; End = b ? b + strlen(b) : NULL; } /*Constructor from const char*, artificially lowered precedence to allow catching literals above*/\
+        ImStrv(const coid::token& s)       { Begin = s.ptr(); End = s.end(); } \
+        ImStrv(const coid::charstr& s)     { Begin = s.ptr(); End = s.ptre(); }
