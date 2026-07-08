@@ -1,9 +1,6 @@
 #include "imgui_ext.h"
-
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui_internal.h"
 #include "IconsFontAwesome6Pro.h"
-
 
 namespace ImGui
 {
@@ -110,8 +107,7 @@ void TextClipped(ImStrv text, float max_width, ImGuiExTextClippedFlags flags)
     ImGui::ItemSize(textRect);
     if (ImGui::ItemAdd(textRect, window->GetID(text)))
     {
-        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
-            textRect.Max.x, text, nullptr, &textSize);
+        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x, text, &textSize);
 
         if (flags & ImGuiExTextClippedFlags_UseTooltip && textRect.GetWidth() < textSize.x && ImGui::IsItemHovered())
             ImGui::SetTooltip("%.*s", text.length(), text.Begin);
@@ -125,7 +121,7 @@ bool TextFilter(ImStrv hint, char* buf, size_t buf_size)
     ImGui::BeginGroup();
     bool result = ImGui::InputTextWithHint("##filter", hint, buf, buf_size);
     if (*buf != '\0') {
-        ImGui::SetItemAllowOverlap();
+        ImGui::SetNextItemAllowOverlap();
         ImGui::SameLine(0, -1);
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() - 26);
         if (ImGui::SmallButton("x")) {
@@ -141,7 +137,7 @@ bool TextFilter(ImStrv hint, char* buf, size_t buf_size)
 
 
 template <auto fn, class ...Args>
-bool core_gui(bool& forced, const char* label, Args ...args)
+bool core_gui(bool& forced, ImStrv label, Args ...args)
 {
     bool result = false;
     const bool f = forced;
@@ -175,62 +171,62 @@ bool core_gui(bool& forced, const char* label, Args ...args)
 }
 
 
-bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
     return core_gui<&ImGui::SliderFloat>(forced, label, v, v_min, v_max, format, flags);
 }
 
-bool InputFloatForced(const char* label, bool& forced, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags) {
+bool InputFloatForced(ImStrv label, bool& forced, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags) {
     return core_gui<&ImGui::InputFloat>(forced, label, v, step, step_fast, format, flags);
 }
 
 
-bool InputIntForced(const char* label, bool& forced, int* v, int step, int step_fast, ImGuiInputTextFlags flags) {
+bool InputIntForced(ImStrv label, bool& forced, int* v, int step, int step_fast, ImGuiInputTextFlags flags) {
     return core_gui<&ImGui::InputInt>(forced, label, v, step, step_fast, flags);
 }
 
-bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step, int64 step_fast, ImGuiInputTextFlags flags) {
+bool InputInt64Forced(ImStrv label, bool& forced, int64* v, int64 step, int64 step_fast, ImGuiInputTextFlags flags) {
     return core_gui<&ImGui::InputScalar>(forced, label, ImGuiDataType_S64, v, &step, &step_fast, "%d", flags);
 }
 
 
-bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool DragFloatForced(ImStrv label, bool& forced, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
     return core_gui<&ImGui::DragFloat>(forced, label, v, v_speed, v_min, v_max, format, flags);
 }
 
-bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool DragFloat2Forced(ImStrv label, bool& forced, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
     return core_gui<&ImGui::DragFloat2>(forced, label, v, v_speed, v_min, v_max, format, flags);
 }
 
-bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool DragFloat3Forced(ImStrv label, bool& forced, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
     return core_gui<&ImGui::DragFloat3>(forced, label, v, v_speed, v_min, v_max, format, flags);
 }
 
-bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
+bool DragFloat4Forced(ImStrv label, bool& forced, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags) {
     return core_gui<&ImGui::DragFloat4>(forced, label, v, v_speed, v_min, v_max, format, flags);
 }
 
 
-bool CheckboxForced(const char* label, bool& forced, bool* v) {
+bool CheckboxForced(ImStrv label, bool& forced, bool* v) {
     return core_gui<&ImGui::Checkbox>(forced, label, v);
 }
 
 
-bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderUInt(ImStrv label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
 {
     return ImGui::SliderScalar(label, ImGuiDataType_U32, v, &v_min, &v_max, format, flags);
 }
 
-bool SliderInt16(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
+bool SliderInt16(ImStrv label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
 {
     return ImGui::SliderScalar(label, ImGuiDataType_S16, v, &v_min, &v_max, format, flags);
 }
 
-bool SliderUInt16(const char* label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
+bool SliderUInt16(ImStrv label, uint* v, uint v_min, uint v_max, const char* format = "%d", ImGuiSliderFlags flags = 0)
 {
     return ImGui::SliderScalar(label, ImGuiDataType_U16, v, &v_min, &v_max, format, flags);
 }
 
-bool Combo(const char* label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
+bool Combo(ImStrv label, uint8* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
 {
     int current = *current_item;
     if (ImGui::Combo(label, &current, items_separated_by_zeros, popup_max_height_in_items)) {
@@ -240,7 +236,7 @@ bool Combo(const char* label, uint8* current_item, const char* items_separated_b
     return false;
 }
 
-bool CheckBoxTristate(const char* label, int* v_tristate)
+bool CheckBoxTristate(ImStrv label, int* v_tristate)
 {
     const ImGuiStyle& style = ImGui::GetStyle();
     float max_width = ImGui::CalcItemWidth();
@@ -451,8 +447,7 @@ bool LabelCheck(ImStrv label, bool* checkbox)
     if (ImGui::ItemAdd(textRect, window->GetID(label)))
     {
         label.End = ImGui::FindRenderedTextEnd(label);
-        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x,
-            textRect.Max.x, label, &textSize);
+        ImGui::RenderTextEllipsis(ImGui::GetWindowDrawList(), textRect.Min, textRect.Max, textRect.Max.x, label, &textSize);
 
         if (checkbox) {
             ImGui::SameLine();
@@ -502,7 +497,7 @@ bool CheckboxRightAlign(ImStrv label, bool* v)
 }
 
 
-bool DragFloat(const char* label, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat(ImStrv label, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -511,7 +506,7 @@ bool DragFloat(const char* label, float* v, float v_speed, float v_min, float v_
     return result;
 }
 
-bool DragFloat2(const char* label, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat2(ImStrv label, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -520,7 +515,7 @@ bool DragFloat2(const char* label, float v[2], float v_speed, float v_min, float
     return result;
 }
 
-bool DragFloat3(const char* label, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat3(ImStrv label, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -529,7 +524,7 @@ bool DragFloat3(const char* label, float v[3], float v_speed, float v_min, float
     return result;
 }
 
-bool DragFloat4(const char* label, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat4(ImStrv label, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -538,7 +533,7 @@ bool DragFloat4(const char* label, float v[4], float v_speed, float v_min, float
     return result;
 }
 
-bool DragFloatRange2(const char* label, float* v_current_min, float* v_current_max, float v_speed, float v_min, float v_max, const char* format, const char* format_max, ImGuiSliderFlags flags)
+bool DragFloatRange2(ImStrv label, float* v_current_min, float* v_current_max, float v_speed, float v_min, float v_max, const char* format, const char* format_max, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -547,7 +542,7 @@ bool DragFloatRange2(const char* label, float* v_current_min, float* v_current_m
     return result;
 }
 
-bool DragInt(const char* label, int* v, float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool DragInt(ImStrv label, int* v, float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -556,7 +551,7 @@ bool DragInt(const char* label, int* v, float v_speed, int v_min, int v_max, con
     return result;
 }
 
-bool DragInt2(const char* label, int v[2], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool DragInt2(ImStrv label, int v[2], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -565,7 +560,7 @@ bool DragInt2(const char* label, int v[2], float v_speed, int v_min, int v_max, 
     return result;
 }
 
-bool DragInt3(const char* label, int v[3], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool DragInt3(ImStrv label, int v[3], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -574,7 +569,7 @@ bool DragInt3(const char* label, int v[3], float v_speed, int v_min, int v_max, 
     return result;
 }
 
-bool DragInt4(const char* label, int v[4], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool DragInt4(ImStrv label, int v[4], float v_speed, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -583,7 +578,7 @@ bool DragInt4(const char* label, int v[4], float v_speed, int v_min, int v_max, 
     return result;
 }
 
-bool DragIntRange2(const char* label, int* v_current_min, int* v_current_max, float v_speed, int v_min, int v_max, const char* format, const char* format_max, ImGuiSliderFlags flags)
+bool DragIntRange2(ImStrv label, int* v_current_min, int* v_current_max, float v_speed, int v_min, int v_max, const char* format, const char* format_max, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -592,7 +587,7 @@ bool DragIntRange2(const char* label, int* v_current_min, int* v_current_max, fl
     return result;
 }
 
-bool DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+bool DragScalar(ImStrv label, ImGuiDataType data_type, void* p_data, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -601,7 +596,7 @@ bool DragScalar(const char* label, ImGuiDataType data_type, void* p_data, float 
     return result;
 }
 
-bool DragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+bool DragScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, float v_speed, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -611,7 +606,7 @@ bool DragScalarN(const char* label, ImGuiDataType data_type, void* p_data, int c
 }
 
 
-bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderFloat(ImStrv label, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -671,7 +666,7 @@ bool SliderFloat2(ImStrv label, float v[2], float v_min, float v_max, const char
     return result;
 }
 
-bool SliderFloat3(const char* label, float v[3], float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderFloat3(ImStrv label, float v[3], float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -680,7 +675,7 @@ bool SliderFloat3(const char* label, float v[3], float v_min, float v_max, const
     return result;
 }
 
-bool SliderFloat4(const char* label, float v[4], float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderFloat4(ImStrv label, float v[4], float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -708,7 +703,7 @@ bool SliderAngle(ImStrv label, float* v_rad, float v_degrees_min, float v_degree
     return result;
 }
 
-bool SliderInt(const char* label, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderInt(ImStrv label, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -717,7 +712,7 @@ bool SliderInt(const char* label, int* v, int v_min, int v_max, const char* form
     return result;
 }
 
-bool SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderInt2(ImStrv label, int v[2], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -725,7 +720,7 @@ bool SliderInt2(const char* label, int v[2], int v_min, int v_max, const char* f
     ImGui::PopID();
     return result;
 }
-bool SliderInt3(const char* label, int v[3], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderInt3(ImStrv label, int v[3], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -733,7 +728,7 @@ bool SliderInt3(const char* label, int v[3], int v_min, int v_max, const char* f
     ImGui::PopID();
     return result;
 }
-bool SliderInt4(const char* label, int v[4], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderInt4(ImStrv label, int v[4], int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -844,7 +839,7 @@ bool SliderScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const voi
     return result;
 }
 
-bool SliderScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+bool SliderScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -881,7 +876,7 @@ bool VSliderFloat(ImStrv label, const ImVec2& size, float* v, float v_min, float
     return result;
 }
 
-bool VSliderInt(const char* label, const ImVec2& size, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
+bool VSliderInt(ImStrv label, const ImVec2& size, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -890,7 +885,7 @@ bool VSliderInt(const char* label, const ImVec2& size, int* v, int v_min, int v_
     return result;
 }
 
-bool VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
+bool VSliderScalar(ImStrv label, const ImVec2& size, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -900,7 +895,7 @@ bool VSliderScalar(const char* label, const ImVec2& size, ImGuiDataType data_typ
 }
 
 
-bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+bool InputText(ImStrv label, char* buf, size_t buf_size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -909,7 +904,7 @@ bool InputText(const char* label, char* buf, size_t buf_size, ImGuiInputTextFlag
     return result;
 }
 
-bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImVec2& size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+bool InputTextMultiline(ImStrv label, char* buf, size_t buf_size, const ImVec2& size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -918,7 +913,7 @@ bool InputTextMultiline(const char* label, char* buf, size_t buf_size, const ImV
     return result;
 }
 
-bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
+bool InputTextWithHint(ImStrv label, const char* hint, char* buf, size_t buf_size, ImGuiInputTextFlags flags, ImGuiInputTextCallback callback, void* user_data)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -927,7 +922,7 @@ bool InputTextWithHint(const char* label, const char* hint, char* buf, size_t bu
     return result;
 }
 
-bool InputFloat(const char* label, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputFloat(ImStrv label, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -936,7 +931,7 @@ bool InputFloat(const char* label, float* v, float step, float step_fast, const 
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputFloat2(const char* label, float v[2], const char* format, ImGuiInputTextFlags flags)
+bool InputFloat2(ImStrv label, float v[2], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -945,7 +940,7 @@ bool InputFloat2(const char* label, float v[2], const char* format, ImGuiInputTe
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputFloat3(const char* label, float v[3], const char* format, ImGuiInputTextFlags flags)
+bool InputFloat3(ImStrv label, float v[3], const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -984,7 +979,7 @@ bool InputFloatCheckbox(ImStrv label, bool* s, float* v, float step, float step_
     return state || ((flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result);
 }
 
-bool InputInt(const char* label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
+bool InputInt(ImStrv label, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -993,7 +988,7 @@ bool InputInt(const char* label, int* v, int step, int step_fast, ImGuiInputText
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags)
+bool InputInt2(ImStrv label, int v[2], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1002,7 +997,7 @@ bool InputInt2(const char* label, int v[2], ImGuiInputTextFlags flags)
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags)
+bool InputInt3(ImStrv label, int v[3], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1011,7 +1006,7 @@ bool InputInt3(const char* label, int v[3], ImGuiInputTextFlags flags)
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags)
+bool InputInt4(ImStrv label, int v[4], ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1020,7 +1015,7 @@ bool InputInt4(const char* label, int v[4], ImGuiInputTextFlags flags)
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputDouble(const char* label, double* v, double step, double step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputDouble(ImStrv label, double* v, double step, double step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1056,7 +1051,7 @@ bool InputScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void
     return (flags & ImGuiInputTextFlags_EnterReturnsTrue) ? ImGui::IsItemDeactivatedAfterEdit() : result;
 }
 
-bool InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int components, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputScalarN(ImStrv label, ImGuiDataType data_type, void* p_data, int components, const void* p_step, const void* p_step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1066,7 +1061,7 @@ bool InputScalarN(const char* label, ImGuiDataType data_type, void* p_data, int 
 }
 
 
-bool ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags)
+bool ColorEdit3(ImStrv label, float col[3], ImGuiColorEditFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1075,7 +1070,7 @@ bool ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags)
     return result;
 }
 
-bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags)
+bool ColorEdit4(ImStrv label, float col[4], ImGuiColorEditFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1084,7 +1079,7 @@ bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags)
     return result;
 }
 
-bool ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags)
+bool ColorPicker3(ImStrv label, float col[3], ImGuiColorEditFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1093,7 +1088,7 @@ bool ColorPicker3(const char* label, float col[3], ImGuiColorEditFlags flags)
     return result;
 }
 
-bool ColorPicker4(const char* label, float col[4], ImGuiColorEditFlags flags, const float* ref_col)
+bool ColorPicker4(ImStrv label, float col[4], ImGuiColorEditFlags flags, const float* ref_col)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1125,7 +1120,7 @@ void EndStatusBar()
 }
 
 
-bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderFloatForced(ImStrv label, bool& forced, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1134,7 +1129,7 @@ bool SliderFloatForced(const char* label, bool& forced, float* v, float v_min, f
     return result;
 }
 
-bool InputFloatForced(const char* label, bool& forced, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
+bool InputFloatForced(ImStrv label, bool& forced, float* v, float step, float step_fast, const char* format, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1143,7 +1138,7 @@ bool InputFloatForced(const char* label, bool& forced, float* v, float step, flo
     return result;
 }
 
-bool InputIntForced(const char* label, bool& forced, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
+bool InputIntForced(ImStrv label, bool& forced, int* v, int step, int step_fast, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1152,7 +1147,7 @@ bool InputIntForced(const char* label, bool& forced, int* v, int step, int step_
     return result;
 }
 
-bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step, int64 step_fast, ImGuiInputTextFlags flags)
+bool InputInt64Forced(ImStrv label, bool& forced, int64* v, int64 step, int64 step_fast, ImGuiInputTextFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1161,7 +1156,7 @@ bool InputInt64Forced(const char* label, bool& forced, int64* v, int64 step, int
     return result;
 }
 
-bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloatForced(ImStrv label, bool& forced, float* v, float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1170,7 +1165,7 @@ bool DragFloatForced(const char* label, bool& forced, float* v, float v_speed, f
     return result;
 }
 
-bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat2Forced(ImStrv label, bool& forced, float v[2], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1179,7 +1174,7 @@ bool DragFloat2Forced(const char* label, bool& forced, float v[2], float v_speed
     return result;
 }
 
-bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat3Forced(ImStrv label, bool& forced, float v[3], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1188,7 +1183,7 @@ bool DragFloat3Forced(const char* label, bool& forced, float v[3], float v_speed
     return result;
 }
 
-bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
+bool DragFloat4Forced(ImStrv label, bool& forced, float v[4], float v_speed, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1197,7 +1192,7 @@ bool DragFloat4Forced(const char* label, bool& forced, float v[4], float v_speed
     return result;
 }
 
-bool CheckboxForced(const char* label, bool& forced, bool* v)
+bool CheckboxForced(ImStrv label, bool& forced, bool* v)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1212,7 +1207,7 @@ bool CheckboxForced(const char* label, bool& forced, bool* v)
     return result;
 }
 
-bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
+bool SliderUInt(ImStrv label, uint* v, uint v_min, uint v_max, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1221,11 +1216,11 @@ bool SliderUInt(const char* label, uint* v, uint v_min, uint v_max, const char* 
     return result;
 }
 
-bool BeginCombo(const char* label, const char* preview_value, ImGuiComboFlags flags)
+bool BeginCombo(ImStrv label, ImStrv preview_value, ImGuiComboFlags flags)
 {
     ImGuiEx::Label(label);
     static char id_buff[128] = { 0 };
-    sprintf_s(id_buff, sizeof(id_buff), "## %s", label);
+    sprintf_s(id_buff, sizeof(id_buff), "## %.*s", label.length(), label.Begin);
     return ImGui::BeginCombo(id_buff, preview_value, flags);
 }
 
@@ -1234,7 +1229,7 @@ void EndCombo()
     ImGui::EndCombo();
 }
 
-bool Combo(const char* label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
+bool Combo(ImStrv label, int* current_item, const char* items_separated_by_zeros, int popup_max_height_in_items)
 {
     ImGuiEx::Label(label);
     ImGui::PushID(label);
@@ -1265,11 +1260,11 @@ bool CheckBoxTristate(ImStrv label, int* v_tristate)
     return result;
 }
 
-bool BeginListBox(const char* label, const ImVec2& size_arg)
+bool BeginListBox(ImStrv label, const ImVec2& size_arg)
 {
     ImGuiEx::Label(label);
     static char id_buff[128] = { 0 };
-    sprintf_s(id_buff, sizeof(id_buff), "##%s", label);
+    sprintf_s(id_buff, sizeof(id_buff), "##%.*s", label.length(), label.Begin);
     return ImGui::BeginListBox(id_buff, size_arg);
 }
 
@@ -1438,7 +1433,7 @@ bool InputBitfield(ImStrv label, uint* bits, const char** items_terminated_by_ze
     return pressed;
 }
 
-bool ActiveButton(const char* label, bool active, const ImVec2& size_arg)
+bool ActiveButton(ImStrv label, bool active, const ImVec2& size_arg)
 {
     if (active) {
         ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
@@ -1456,7 +1451,7 @@ bool ActiveButton(const char* label, bool active, const ImVec2& size_arg)
 
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-void TextFramed(const char* label, const char* fmt, ...)
+void TextFramed(ImStrv label, const char* fmt, ...)
 {
     const ImGuiStyle& style = ImGui::GetStyle();
 
@@ -1464,7 +1459,7 @@ void TextFramed(const char* label, const char* fmt, ...)
     ImGui::PushID(label);
 
     ImGuiWindow* window = ImGui::GetCurrentWindow();
-    const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+    const ImVec2 label_size = ImGui::CalcTextSize(label, true);
     const ImVec2 frame_size = ImGui::CalcItemSize(ImVec2(0, 0), ImGui::CalcItemWidth(), label_size.y + style.FramePadding.y * 2.0f);
     ImVec2 bb_size = frame_size;
     const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + bb_size);
@@ -1567,6 +1562,7 @@ static int CalcStepCount(ImGuiDataType data_type, const void* p_min, const void*
     }
 }
 
+/// Derivated from imgui_widgets.cpp - ImGui::SliderScalar
 bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const void* p_step, const char* format, ImGuiSliderFlags flags)
 {
     ImGuiWindow* window = ImGui::GetCurrentWindow();
@@ -1578,7 +1574,7 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     const ImGuiID id = window->GetID(label);
     const float w = ImGui::CalcItemWidth();
 
-    const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+    const ImVec2 label_size = ImGui::CalcTextSize(label, true);
     const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
     const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
 
@@ -1591,21 +1587,29 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
     if (format == NULL)
         format = ImGui::DataTypeGetInfo(data_type)->PrintFmt;
 
-    // Tabbing or CTRL-clicking on Slider turns it into an input box
-    const bool hovered = ImGui::ItemHoverable(frame_bb, id);
+    const bool hovered = ImGui::ItemHoverable(frame_bb, id, g.LastItemData.ItemFlags);
     bool temp_input_is_active = temp_input_allowed && ImGui::TempInputIsActive(id);
     if (!temp_input_is_active)
     {
-        const bool input_requested_by_tabbing = temp_input_allowed && (g.LastItemData.StatusFlags & ImGuiItemStatusFlags_FocusedByTabbing) != 0;
-        const bool clicked = (hovered && g.IO.MouseClicked[0]);
-        if (input_requested_by_tabbing || clicked || g.NavActivateId == id || g.NavActivateInputId == id)
+        // Tabbing or Ctrl+Click on Slider turns it into an input box
+        const bool clicked = hovered && ImGui::IsMouseClicked(0, ImGuiInputFlags_None, id);
+        const bool make_active = (clicked || g.NavActivateId == id);
+        if (make_active && clicked)
+            ImGui::SetKeyOwner(ImGuiKey_MouseLeft, id);
+        if (make_active && temp_input_allowed)
+            if ((clicked && g.IO.KeyCtrl) || (g.NavActivateId == id && (g.NavActivateFlags & ImGuiActivateFlags_PreferInput)))
+                temp_input_is_active = true;
+
+        // Store initial value (not used by main lib but available as a convenience but some mods e.g. to revert)
+        if (make_active)
+            memcpy(&g.ActiveIdValueOnActivation, p_data, ImGui::DataTypeGetInfo(data_type)->Size);
+
+        if (make_active && !temp_input_is_active)
         {
             ImGui::SetActiveID(id, window);
             ImGui::SetFocusID(id, window);
             ImGui::FocusWindow(window);
             g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
-            if (temp_input_allowed && (input_requested_by_tabbing || (clicked && g.IO.KeyCtrl) || g.NavActivateInputId == id))
-                temp_input_is_active = true;
         }
     }
 
@@ -1618,7 +1622,7 @@ bool SliderStepScalar(ImStrv label, ImGuiDataType data_type, void* p_data, const
 
     // Draw frame
     const ImU32 frame_col = ImGui::GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : hovered ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
-    ImGui::RenderNavHighlight(frame_bb, id);
+    ImGui::RenderNavCursor(frame_bb, id);
     ImGui::RenderFrame(frame_bb.Min, frame_bb.Max, frame_col, true, g.Style.FrameRounding);
 
     // Slider behavior

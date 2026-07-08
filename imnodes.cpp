@@ -374,7 +374,7 @@ void ImDrawListGrowChannels(ImDrawList* draw_list, const int num_channels)
         {
             ImDrawCmd draw_cmd;
             draw_cmd.ClipRect = draw_list->_ClipRectStack.back();
-            draw_cmd.TextureId = draw_list->_TextureIdStack.back();
+            draw_cmd.TexRef = draw_list->_TextureStack.back();
             channel._CmdBuffer.push_back(draw_cmd);
         }
     }
@@ -1836,8 +1836,8 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
                 node.Rect.Max - ImVec2(thickness, thickness),
                 node.ColorStyle.OutlineActive,
                 ImMax(0.0f, node.LayoutStyle.CornerRounding - 1.0f),
-                ImDrawFlags_RoundCornersAll,
-                thickness);
+                thickness,
+                ImDrawFlags_RoundCornersAll);
         }
 
         if ((GImNodes->Style.Flags & ImNodesStyleFlags_NodeOutline) != 0)
@@ -1847,8 +1847,8 @@ void DrawNode(ImNodesEditorContext& editor, const int node_idx)
                 node.Rect.Max,
                 node_outline,
                 node.LayoutStyle.CornerRounding,
-                ImDrawFlags_RoundCornersAll,
-                border_thickness);
+                border_thickness,
+                ImDrawFlags_RoundCornersAll);
         }
     }
 

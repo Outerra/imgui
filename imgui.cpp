@@ -2600,6 +2600,7 @@ ImGuiID ImHashStr(ImStrv str, ImGuiID seed)
     const unsigned char* data = (const unsigned char*)str.Begin;
 #ifndef IMGUI_ENABLE_SSE4_2_CRC
     const ImU32* crc32_lut = GCrc32LookupTable;
+#endif
     if (str.End != NULL || str.Begin == NULL)
     {
         size_t data_size = (size_t)str.length();
