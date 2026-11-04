@@ -1,9 +1,110 @@
-1. Clone Imgui via get_imgui.bat
-2. Add 'https://github.com/ocornut/imgui.git' as new remote (lets call it 'ocornut_origin')
-3. Create new branch from 'remotes/ocornut_origin/docking' (lets call it 'sync_branch')
-4. Merge 'remotes/ocornut_origin/features/string_view' branch to 'sync_branch'
-5. Switch to 'docking_and_string_view' branch and pull changes from 'remotes/origin/docking_and_string_view'
-6. Merge 'sync_branch' to 'docking_and_string_view'. Resolve confilcts if needed.
-7. Commit changes
-8. Push 'docking_and_string_view'
-9. Delete 'sync_branch'
+Current origin version
+----------------------
+1.93.0 (v1.93.0-docking + ImStrv, ocornut's string_view_with_docking 74986cd7b)
+
+Branch layout
+-------------
+'outerra' = ocornut's 'features/string_view_with_docking' as pushed for a release
+            (vX.Y.Z-docking tag + the ImStrv commits)
+          + "imnodes added" (imnodes, see "Updating imnodes")
+          + our commits.
+
+Remotes: 'origin' = https://github.com/Outerra/imgui.git
+         'ocornut_origin' = https://github.com/ocornut/imgui.git
+
+ocornut force-pushes 'features/string_view_with_docking', so after an update the commit 'outerra'
+sits on is no longer on that branch. The rebase in step 6 therefore names the old base explicitly
+(--onto). A plain rebase would also replay ocornut's old string_view commits as if they were ours.
+
+Commits that change imnodes change only the imnodes files, with subject "imnodes: ...".
+All files are stored with LF line endings.
+
+
+Syncing with ocornut
+--------------------
+The commands are for Git Bash, run in the imgui clone, all in one shell ($OLD is used in later
+steps).
+
+1. Clone Imgui fork from outerra github
+
+2. Add 'https://github.com/ocornut/imgui.git' as a remote named 'ocornut_origin' (once per clone):
+     git remote add ocornut_origin https://github.com/ocornut/imgui.git
+
+3. Fetch both remotes and bring 'outerra' up to date:
+     git fetch origin
+     git fetch ocornut_origin
+     git checkout outerra
+     git pull --ff-only origin outerra
+
+4. Find our first commit, "imnodes added", and keep a backup of 'outerra' branch
+
+5. Create 'ot_sync' from ocornut's release push of 'features/string_view_with_docking' and put
+   "imnodes added" commit on it.
+   imgui/activity?ref=refs/heads/features/string_view_with_docking" --jq '.[] | "\(.timestamp) \(.after)"'
+     git fetch ocornut_origin <sha of the push from the release day>
+     git log --oneline vX.Y.Z-docking..<sha>      (must list only "ImStrv: ..." commits)
+
+6. Rebase our commits onto 'ot_sync', leaving out ocornut's commits and the old "imnodes added":
+   Resolve conflicts (see "Known conflicts")
+
+7. Build the engine and test.
+
+8. Push 'outerra'. The rebase rewrote it, so the push needs --force-with-lease:
+
+9. Delete 'ot_sync' and 'outerra_prev' ('outerra' contains 'ot_sync'):
+
+
+Known conflicts
+---------------
+Our changes overlap ocornut's code in these places. The commit that conflicts is in brackets.
+
+- imconfig.h ["OT extensions", "imgui version update to 1.92.9"]:
+  take ocornut's file and apply our changes to it:
+  - define IMGUI_DISABLE_OBSOLETE_FUNCTIONS, IMGUI_DISABLE_DEFAULT_ALLOCATORS and
+    ImDrawIdx as unsigned int;
+  - uncomment the guarded IMGUI_DEFINE_MATH_OPERATORS;
+  - remove the ImStrv example comment;
+  - keep the OT block (comm includes, is_char_ptr, IM_STRV_CLASS_EXTRA) at the end of the file.
+
+- imgui_widgets.cpp, SliderBehavior ["fixed IsItemDeactivatedAfterEdit when dragging sliders"]:
+  ocornut clears the active id on mouse release in SliderBehavior(), before SliderBehaviorT()
+  runs. Comment that out and keep our ClearActiveID() at the top of the mouse branch in
+  SliderBehaviorT(), so the release frame still applies the mouse position.
+
+- imgui.h, ImStrv(const char*) ["improved ImStrv constructor ..."]:
+  keep ocornut's line commented out; IM_STRV_CLASS_EXTRA in imconfig.h provides the constructors.
+
+- imgui_widgets.cpp, end of ColorPicker4 ["added recent colors list to ColorEdit"]:
+  keep ocornut's code, then our recent[0] update.
+
+
+Updating imnodes (optional)
+---------------------------
+imnodes is vendored from https://github.com/Nelarius/imnodes (imnodes.cpp, imnodes.h,
+imnodes_internal.h). "imnodes added" holds upstream commit
+2d0c280b07b2f62b120034811cc6e41251673961 (2026-10-18) with our changes.
+
+a. Clone imnodes and commit our changes on the upstream commit above:
+     git clone https://github.com/Nelarius/imnodes.git
+     cd imnodes
+     git checkout -b outerra 2d0c280b07b2f62b120034811cc6e41251673961
+     (copy imnodes.cpp, imnodes.h and imnodes_internal.h from the imgui clone here)
+     git commit -am "OT changes"
+   A clone that already has 'outerra' with our changes only needs the three files from the
+   imgui clone committed on top.
+
+b. Rebase our changes onto the newest upstream:
+     git fetch origin
+     git rebase origin/master
+   Resolve conflicts in upstream's style, and format only the changed lines
+   ("git clang-format" uses imnodes' .clang-format).
+
+c. Compile imnodes.cpp against the imgui fork: imnodes.cpp includes <imgui/imgui.h>, and
+   imconfig.h includes comm, e.g.
+     cl /c /std:c++20 /I <folder containing imgui\> /I <folder containing comm\> imnodes.cpp
+
+d. Copy the three files into the imgui clone ('ot_sync' checked out) and amend "imnodes added":
+     git commit -a --amend --no-edit
+   This keeps Brano's author, date and message.
+
+e. Write the new upstream commit in this section.
