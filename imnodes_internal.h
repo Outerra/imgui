@@ -1,8 +1,8 @@
 #pragma once
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
-#include <imgui_internal.h>
+#include <imgui/imgui.h>
+#include <imgui/imgui_internal.h>
 
 #include "imnodes.h"
 
@@ -131,14 +131,15 @@ private:
 struct ImNodeData
 {
     int    Id;
+    int    ParentNodeIdx;
     ImVec2 Origin; // The node origin is in editor space
     ImRect TitleBarContentRect;
     ImRect Rect;
 
     struct
     {
-        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar, TitlebarHovered,
-            TitlebarSelected;
+        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, OutlineHovered,
+            OutlineSelected, OutlineActive, Titlebar, TitlebarHovered, TitlebarSelected;
     } ColorStyle;
 
     struct
@@ -150,11 +151,12 @@ struct ImNodeData
 
     ImVector<int> PinIndices;
     bool          Draggable;
+    bool          Active;
 
     ImNodeData(const int node_id)
-        : Id(node_id), Origin(0.0f, 0.0f), TitleBarContentRect(),
+        : Id(node_id), ParentNodeIdx(INT_MAX), Origin(0.0f, 0.0f), TitleBarContentRect(),
           Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
-          Draggable(true)
+          Draggable(true), Active(false)
     {
     }
 
@@ -187,14 +189,17 @@ struct ImPinData
 struct ImLinkData
 {
     int Id;
-    int StartPinIdx, EndPinIdx;
+    int  StartIdx, EndIdx;
+    bool Active;
 
     struct
     {
-        ImU32 Base, Hovered, Selected;
+        ImU32 Base, Hovered, Selected, Active;
     } ColorStyle;
 
-    ImLinkData(const int link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
+    ImLinkData(const int link_id) : Id(link_id), StartIdx(), EndIdx(), Active(false), ColorStyle()
+    {
+    }
 };
 
 struct ImClickInteractionState
@@ -203,8 +208,8 @@ struct ImClickInteractionState
 
     struct
     {
-        int                     StartPinIdx;
-        ImOptionalIndex         EndPinIdx;
+        int                     StartIdx;
+        ImOptionalIndex         EndIdx;
         ImNodesLinkCreationType Type;
     } LinkCreation;
 
@@ -213,7 +218,11 @@ struct ImClickInteractionState
         ImRect Rect; // Coordinates in grid space
     } BoxSelector;
 
-    ImClickInteractionState() : Type(ImNodesClickInteractionType_None) {}
+    ImClickInteractionState()
+        : Type(ImNodesClickInteractionType_None), LinkCreation(), BoxSelector()
+    {
+        LinkCreation.StartIdx = -1;
+    }
 };
 
 struct ImNodesColElement
@@ -267,6 +276,10 @@ struct ImNodesEditorContext
     ImVec2 PrimaryNodeOffset;
 
     ImClickInteractionState ClickInteraction;
+    // Snap dragged nodes to the grid when they are released
+    bool SnapToGrid;
+    // Selected nodes were dragged during the current click interaction
+    bool NodesMoving;
 
     // Mini-map state set by MiniMap()
 
@@ -284,9 +297,10 @@ struct ImNodesEditorContext
 
     ImNodesEditorContext()
         : Nodes(), Pins(), Links(), Panning(0.f, 0.f), SelectedNodeIndices(), SelectedLinkIndices(),
-          SelectedNodeOffsets(), PrimaryNodeOffset(0.f, 0.f), ClickInteraction(),
-          MiniMapEnabled(false), MiniMapSizeFraction(0.0f), MiniMapNodeHoveringCallback(NULL),
-          MiniMapNodeHoveringCallbackUserData(NULL), MiniMapScaling(0.0f)
+          SelectedNodeOffsets(), PrimaryNodeOffset(0.f, 0.f), ClickInteraction(), SnapToGrid(false),
+          NodesMoving(false), MiniMapEnabled(false), MiniMapSizeFraction(0.0f),
+          MiniMapNodeHoveringCallback(NULL), MiniMapNodeHoveringCallbackUserData(NULL),
+          MiniMapScaling(0.0f)
     {
     }
 };
@@ -311,6 +325,7 @@ struct ImNodesContext
     ImNodesScope CurrentScope;
 
     // Configuration state
+    ImNodesContextFlags              Flags;
     ImNodesIO                        Io;
     ImNodesStyle                     Style;
     ImVector<ImNodesColElement>      ColorModifierStack;
@@ -483,6 +498,8 @@ inline int ObjectPoolFindOrCreateIndex(ImObjectPool<ImNodeData>& nodes, const in
 
         ImNodesEditorContext& editor = EditorContextGet();
         editor.NodeDepthOrder.push_back(node_idx);
+        // TODO: NodeDepthOrder can be corrupted if same nodes are used for different user "context"
+        // (children nodes can became separated from parent)
     }
 
     // Flag node as used

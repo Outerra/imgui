@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stddef.h>
-#include <imgui.h>
+#include <imgui/imgui.h>
 
 #ifdef IMNODES_USER_CONFIG
 #include IMNODES_USER_CONFIG
@@ -15,6 +15,9 @@ typedef int ImNodesCol;             // -> enum ImNodesCol_
 typedef int ImNodesStyleVar;        // -> enum ImNodesStyleVar_
 typedef int ImNodesStyleFlags;      // -> enum ImNodesStyleFlags_
 typedef int ImNodesPinShape;        // -> enum ImNodesPinShape_
+typedef int ImNodesContextFlags;    // -> enum ImNodesContextFlags_
+typedef int ImNodesNodeFlags;       // -> enum ImNodesNodeFlags_
+typedef int ImNodesLinkFlags;       // -> enum ImNodesLinkFlags_
 typedef int ImNodesAttributeFlags;  // -> enum ImNodesAttributeFlags_
 typedef int ImNodesMiniMapLocation; // -> enum ImNodesMiniMapLocation_
 
@@ -24,12 +27,16 @@ enum ImNodesCol_
     ImNodesCol_NodeBackgroundHovered,
     ImNodesCol_NodeBackgroundSelected,
     ImNodesCol_NodeOutline,
+    ImNodesCol_NodeOutlineHovered,
+    ImNodesCol_NodeOutlineSelected,
+    ImNodesCol_NodeOutlineActive,
     ImNodesCol_TitleBar,
     ImNodesCol_TitleBarHovered,
     ImNodesCol_TitleBarSelected,
     ImNodesCol_Link,
     ImNodesCol_LinkHovered,
     ImNodesCol_LinkSelected,
+    ImNodesCol_LinkActive,
     ImNodesCol_Pin,
     ImNodesCol_PinHovered,
     ImNodesCol_BoxSelector,
@@ -89,6 +96,25 @@ enum ImNodesPinShape_
     ImNodesPinShape_TriangleFilled,
     ImNodesPinShape_Quad,
     ImNodesPinShape_QuadFilled
+};
+
+enum ImNodesContextFlags_
+{
+    ImNodesContextFlags_Default = 0,        // use pins for node linking
+    ImNodesContextFlags_NodeLinks = 1 << 0, // use linking directly between nodes
+};
+
+enum ImNodesNodeFlags_
+{
+    ImNodesNodeFlags_None = 0,
+    ImNodesNodeFlags_Undraggable = 1 << 0, // cannot be moved by mouse drag
+    ImNodesNodeFlags_Active = 1 << 1,      // use visuals of active node
+};
+
+enum ImNodesLinkFlags_
+{
+    ImNodesLinkFlags_None = 0,
+    ImNodesLinkFlags_Active = 1 << 0, // use visuals of active node
 };
 
 // This enum controls the way the attribute pins behave.
@@ -201,7 +227,7 @@ struct ImNodesStyle
 
     // By default, ImNodesStyleFlags_NodeOutline and ImNodesStyleFlags_Gridlines are enabled.
     ImNodesStyleFlags Flags;
-    // Set these mid-frame using Push/PopColorStyle. You can index this color array with with a
+    // Set these mid-frame using Push/PopStyleColor. You can index this color array with with a
     // ImNodesCol value.
     unsigned int Colors[ImNodesCol_COUNT];
 
@@ -243,7 +269,7 @@ namespace IMNODES_NAMESPACE
 // function sets the GImGui global variable, which is not shared across dll boundaries.
 void SetImGuiContext(ImGuiContext* ctx);
 
-ImNodesContext* CreateContext();
+ImNodesContext* CreateContext(ImNodesContextFlags flags = 0);
 void            DestroyContext(ImNodesContext* ctx = NULL); // NULL = destroy current context
 ImNodesContext* GetCurrentContext();
 void            SetCurrentContext(ImNodesContext* ctx);
@@ -254,6 +280,9 @@ void                  EditorContextSet(ImNodesEditorContext*);
 ImVec2                EditorContextGetPanning();
 void                  EditorContextResetPanning(const ImVec2& pos);
 void                  EditorContextMoveToNode(const int node_id);
+void                  EditorContextSetSnapToGrid(bool do_snap);
+
+ImVec2 EditorContextScreenSpaceToGridSpace(const ImVec2& pos);
 
 ImNodesIO& GetIO();
 
@@ -280,15 +309,15 @@ void MiniMap(
     const ImNodesMiniMapNodeHoveringCallback         node_hovering_callback = NULL,
     const ImNodesMiniMapNodeHoveringCallbackUserData node_hovering_callback_data = NULL);
 
-// Use PushColorStyle and PopColorStyle to modify ImNodesStyle::Colors mid-frame.
-void PushColorStyle(ImNodesCol item, unsigned int color);
-void PopColorStyle();
+// Use PushStyleColor and PopStyleColor to modify ImNodesStyle::Colors mid-frame.
+void PushStyleColor(ImNodesCol item, unsigned int color);
+void PopStyleColor(int count = 1);
 void PushStyleVar(ImNodesStyleVar style_item, float value);
 void PushStyleVar(ImNodesStyleVar style_item, const ImVec2& value);
 void PopStyleVar(int count = 1);
 
 // id can be any positive or negative integer, but INT_MIN is currently reserved for internal use.
-void BeginNode(int id);
+void BeginNode(int id, ImNodesNodeFlags flags = 0);
 void EndNode();
 
 ImVec2 GetNodeDimensions(int id);
@@ -327,10 +356,7 @@ void PopAttributeFlag();
 // Render a link between attributes.
 // The attributes ids used here must match the ids used in Begin(Input|Output)Attribute function
 // calls. The order of start_attr and end_attr doesn't make a difference for rendering the link.
-void Link(int id, int start_attribute_id, int end_attribute_id);
-
-// Enable or disable the ability to click and drag a specific node.
-void SetNodeDraggable(int node_id, const bool draggable);
+void Link(int id, int start_attribute_id, int end_attribute_id, ImNodesLinkFlags flags = 0);
 
 // The node's position can be expressed in three coordinate systems:
 // * screen space coordinates, -- the origin is the upper left corner of the window.
@@ -343,11 +369,11 @@ void SetNodeDraggable(int node_id, const bool draggable);
 
 void SetNodeScreenSpacePos(int node_id, const ImVec2& screen_space_pos);
 void SetNodeEditorSpacePos(int node_id, const ImVec2& editor_space_pos);
-void SetNodeGridSpacePos(int node_id, const ImVec2& grid_pos);
+void SetNodeGridSpacePos(int node_id, const ImVec2& grid_pos, bool relative = true);
 
 ImVec2 GetNodeScreenSpacePos(const int node_id);
 ImVec2 GetNodeEditorSpacePos(const int node_id);
-ImVec2 GetNodeGridSpacePos(const int node_id);
+ImVec2 GetNodeGridSpacePos(const int node_id, bool relative = true);
 
 // If ImNodesStyleFlags_GridSnapping is enabled, snap the specified node's origin to the grid.
 void SnapNodeToGrid(int node_id);
@@ -371,6 +397,10 @@ int NumSelectedLinks();
 // returned.
 void GetSelectedNodes(int* node_ids);
 void GetSelectedLinks(int* link_ids);
+
+void SetSelectedNodes(int* node_ids, int count);
+void SetSelectedLinks(int* link_ids, int count);
+
 // Clears the list of selected nodes/links. Useful if you want to delete a selected node or link.
 void ClearNodeSelection();
 void ClearLinkSelection();
@@ -387,6 +417,9 @@ void SelectLink(int link_id);
 void ClearLinkSelection(int link_id);
 bool IsLinkSelected(int link_id);
 
+// were nodes moved by mouse drag, returns true in frame after mouse release
+bool AreSelectedNodesMoved();
+
 // Was the previous attribute active? This will continuously return true while the left mouse button
 // is being pressed over the UI content of the attribute.
 bool IsAttributeActive();
@@ -397,19 +430,16 @@ bool IsAnyAttributeActive(int* attribute_id = NULL);
 // these after EndNodeEditor().
 
 // Did the user start dragging a new link from a pin?
-bool IsLinkStarted(int* started_at_attribute_id);
+bool IsLinkStarted(int* started_at_id);
 // Did the user drop the dragged link before attaching it to a pin?
 // There are two different kinds of situations to consider when handling this event:
 // 1) a link which is created at a pin and then dropped
 // 2) an existing link which is detached from a pin and then dropped
 // Use the including_detached_links flag to control whether this function triggers when the user
 // detaches a link and drops it.
-bool IsLinkDropped(int* started_at_attribute_id = NULL, bool including_detached_links = true);
+bool IsLinkDropped(int* started_at_id = NULL, bool including_detached_links = true);
 // Did the user finish creating a new link?
-bool IsLinkCreated(
-    int*  started_at_attribute_id,
-    int*  ended_at_attribute_id,
-    bool* created_from_snap = NULL);
+bool IsLinkCreated(int* started_at_id, int* ended_at_id, bool* created_from_snap = NULL);
 bool IsLinkCreated(
     int*  started_at_node_id,
     int*  started_at_attribute_id,
