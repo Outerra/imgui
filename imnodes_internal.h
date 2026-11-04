@@ -1,10 +1,12 @@
 #pragma once
 
-#include <imgui/imgui.h>
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui/imgui_internal.h>
+#include <imgui.h>
+#include <imgui_internal.h>
 
-#include <assert.h>
+#include "imnodes.h"
+
+#include <limits.h>
 
 // the structure of this file:
 //
@@ -55,9 +57,7 @@ enum ImNodesClickInteractionType_
     ImNodesClickInteractionType_LinkCreation,
     ImNodesClickInteractionType_Panning,
     ImNodesClickInteractionType_BoxSelection,
-    ImNodesClickInteractionType_MiniMapPanning,
-    ImNodesClickInteractionType_MiniMapZooming,
-    ImNodesClickInteractionType_MiniMapSnapping,
+    ImNodesClickInteractionType_ImGuiItem,
     ImNodesClickInteractionType_None
 };
 
@@ -66,9 +66,6 @@ enum ImNodesLinkCreationType_
     ImNodesLinkCreationType_Standard,
     ImNodesLinkCreationType_FromDetach
 };
-
-// Callback type used to specify special behavior when hovering a node in the minimap
-typedef void (*ImNodesMiniMapNodeHoveringCallback)(int, void*);
 
 // [SECTION] internal data structures
 
@@ -87,12 +84,14 @@ struct ImObjectPool
     ImVector<bool> InUse;
     ImVector<int>  FreeList;
     ImGuiStorage   IdMap;
+
+    ImObjectPool() : Pool(), InUse(), FreeList(), IdMap() {}
 };
 
 // Emulates std::optional<int> using the sentinel value `INVALID_INDEX`.
 struct ImOptionalIndex
 {
-    ImOptionalIndex() = default;
+    ImOptionalIndex() : _Index(INVALID_INDEX) {}
     ImOptionalIndex(const int value) : _Index(value) {}
 
     // Observers
@@ -101,7 +100,7 @@ struct ImOptionalIndex
 
     inline int Value() const
     {
-        assert(HasValue());
+        IM_ASSERT(HasValue());
         return _Index;
     }
 
@@ -126,97 +125,95 @@ struct ImOptionalIndex
     static const int INVALID_INDEX = -1;
 
 private:
-    int _Index = INVALID_INDEX;
+    int _Index;
 };
 
 struct ImNodeData
 {
     int    Id;
-    int    ParentNodeIdx = INT_MAX;
-    ImVec2 Origin = { 100.0f, 100.0f }; // The node origin is in editor space
+    ImVec2 Origin; // The node origin is in editor space
     ImRect TitleBarContentRect;
-    ImRect Rect = { ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f) };
+    ImRect Rect;
 
     struct
     {
-        ImU32 Background = 0;
-        ImU32 BackgroundHovered = 0;
-        ImU32 BackgroundSelected = 0;
-        ImU32 Outline = 0;
-        ImU32 OutlineHovered = 0;
-        ImU32 OutlineSelected = 0;
-        ImU32 OutlineActive = 0;
-        ImU32 Titlebar = 0;
-        ImU32 TitlebarHovered = 0;
-        ImU32 TitlebarSelected = 0;
+        ImU32 Background, BackgroundHovered, BackgroundSelected, Outline, Titlebar, TitlebarHovered,
+            TitlebarSelected;
     } ColorStyle;
 
     struct
     {
-        float  CornerRounding = 0.0f;
+        float  CornerRounding;
         ImVec2 Padding;
-        float  BorderThickness = 0.0f;
+        float  BorderThickness;
     } LayoutStyle;
 
     ImVector<int> PinIndices;
-    bool          Draggable = true;
-    bool          Active = false;
+    bool          Draggable;
 
-    ImNodeData(const int node_id) : Id(node_id) {}
+    ImNodeData(const int node_id)
+        : Id(node_id), Origin(0.0f, 0.0f), TitleBarContentRect(),
+          Rect(ImVec2(0.0f, 0.0f), ImVec2(0.0f, 0.0f)), ColorStyle(), LayoutStyle(), PinIndices(),
+          Draggable(true)
+    {
+    }
+
+    ~ImNodeData() { Id = INT_MIN; }
 };
 
 struct ImPinData
 {
-    int                  Id = -1;
-    int                  ParentNodeIdx = -1;
+    int                  Id;
+    int                  ParentNodeIdx;
     ImRect               AttributeRect;
-    ImNodesAttributeType Type = ImNodesAttributeType_None;
-    ImNodesPinShape      Shape = ImNodesPinShape_CircleFilled;
+    ImNodesAttributeType Type;
+    ImNodesPinShape      Shape;
     ImVec2               Pos; // screen-space coordinates
-    int                  Flags = ImNodesAttributeFlags_None;
+    int                  Flags;
 
     struct
     {
-        ImU32 Background = 0;
-        ImU32 Hovered = 0;
+        ImU32 Background, Hovered;
     } ColorStyle;
 
-    ImPinData(const int pin_id) : Id(pin_id) {}
+    ImPinData(const int pin_id)
+        : Id(pin_id), ParentNodeIdx(), AttributeRect(), Type(ImNodesAttributeType_None),
+          Shape(ImNodesPinShape_CircleFilled), Pos(), Flags(ImNodesAttributeFlags_None),
+          ColorStyle()
+    {
+    }
 };
 
 struct ImLinkData
 {
-    int Id = -1;
-    int StartIdx = -1;
-    int EndIdx = -1;
-    bool Active = false;
+    int Id;
+    int StartPinIdx, EndPinIdx;
 
     struct
     {
-        ImU32 Base = 0;
-        ImU32 Hovered = 0;
-        ImU32 Selected = 0;
-        ImU32 Active = 0;
+        ImU32 Base, Hovered, Selected;
     } ColorStyle;
 
-    ImLinkData(const int link_id) : Id(link_id) {}
+    ImLinkData(const int link_id) : Id(link_id), StartPinIdx(), EndPinIdx(), ColorStyle() {}
 };
 
 struct ImClickInteractionState
 {
-    ImNodesClickInteractionType Type = ImNodesClickInteractionType_None;
+    ImNodesClickInteractionType Type;
 
     struct
     {
-        int                     StartIdx = -1;
-        ImOptionalIndex         EndIdx;
+        int                     StartPinIdx;
+        ImOptionalIndex         EndPinIdx;
         ImNodesLinkCreationType Type;
     } LinkCreation;
 
     struct
     {
-        ImRect Rect;
+        ImRect Rect; // Coordinates in grid space
     } BoxSelector;
+
+    ImClickInteractionState() : Type(ImNodesClickInteractionType_None) {}
 };
 
 struct ImNodesColElement
@@ -230,11 +227,17 @@ struct ImNodesColElement
 struct ImNodesStyleVarElement
 {
     ImNodesStyleVar Item;
-    float           Value;
+    float           FloatValue[2];
 
-    ImNodesStyleVarElement(const float value, const ImNodesStyleVar variable)
-        : Item(variable), Value(value)
+    ImNodesStyleVarElement(const ImNodesStyleVar variable, const float value) : Item(variable)
     {
+        FloatValue[0] = value;
+    }
+
+    ImNodesStyleVarElement(const ImNodesStyleVar variable, const ImVec2 value) : Item(variable)
+    {
+        FloatValue[0] = value.x;
+        FloatValue[1] = value.y;
     }
 };
 
@@ -249,14 +252,43 @@ struct ImNodesEditorContext
     ImVector<int> NodeDepthOrder;
 
     // ui related fields
-    ImVec2 Panning = { 0.f, 0.f };
+    ImVec2 Panning;
+    ImVec2 AutoPanningDelta;
+    // Minimum and maximum extents of all content in grid space. Valid after final
+    // ImNodes::EndNode() call.
+    ImRect GridContentBounds;
 
     ImVector<int> SelectedNodeIndices;
     ImVector<int> SelectedLinkIndices;
 
+    // Relative origins of selected nodes for snapping of dragged nodes
+    ImVector<ImVec2> SelectedNodeOffsets;
+    // Offset of the primary node origin relative to the mouse cursor.
+    ImVec2 PrimaryNodeOffset;
+
     ImClickInteractionState ClickInteraction;
-    bool SnapToGrid = false;
-    bool NodesMoving = false;
+
+    // Mini-map state set by MiniMap()
+
+    bool                                       MiniMapEnabled;
+    ImNodesMiniMapLocation                     MiniMapLocation;
+    float                                      MiniMapSizeFraction;
+    ImNodesMiniMapNodeHoveringCallback         MiniMapNodeHoveringCallback;
+    ImNodesMiniMapNodeHoveringCallbackUserData MiniMapNodeHoveringCallbackUserData;
+
+    // Mini-map state set during EndNodeEditor() call
+
+    ImRect MiniMapRectScreenSpace;
+    ImRect MiniMapContentScreenSpace;
+    float  MiniMapScaling;
+
+    ImNodesEditorContext()
+        : Nodes(), Pins(), Links(), Panning(0.f, 0.f), SelectedNodeIndices(), SelectedLinkIndices(),
+          SelectedNodeOffsets(), PrimaryNodeOffset(0.f, 0.f), ClickInteraction(),
+          MiniMapEnabled(false), MiniMapSizeFraction(0.0f), MiniMapNodeHoveringCallback(NULL),
+          MiniMapNodeHoveringCallbackUserData(NULL), MiniMapScaling(0.0f)
+    {
+    }
 };
 
 struct ImNodesContext
@@ -275,18 +307,10 @@ struct ImNodesContext
     ImVec2 CanvasOriginScreenSpace;
     ImRect CanvasRectScreenSpace;
 
-    // MiniMap state
-    ImRect                             MiniMapRectScreenSpace;
-    ImVec2                             MiniMapRectSnappingOffset;
-    float                              MiniMapZoom;
-    ImNodesMiniMapNodeHoveringCallback MiniMapNodeHoveringCallback;
-    void*                              MiniMapNodeHoveringCallbackUserData;
-
     // Debug helpers
     ImNodesScope CurrentScope;
 
     // Configuration state
-    ImNodesContextFlags              Flags;
     ImNodesIO                        Io;
     ImNodesStyle                     Style;
     ImVector<ImNodesColElement>      ColorModifierStack;
@@ -302,10 +326,8 @@ struct ImNodesContext
     int CurrentAttributeId;
 
     ImOptionalIndex HoveredNodeIdx;
-    ImOptionalIndex InteractiveNodeIdx;
     ImOptionalIndex HoveredLinkIdx;
     ImOptionalIndex HoveredPinIdx;
-    int             HoveredPinFlags;
 
     ImOptionalIndex DeletedLinkIdx;
     ImOptionalIndex SnapLinkIdx;
@@ -328,21 +350,22 @@ struct ImNodesContext
     bool  LeftMouseDragging;
     bool  AltMouseDragging;
     float AltMouseScrollDelta;
+    bool  MultipleSelectModifier;
 };
 
-namespace ImNodes
+namespace IMNODES_NAMESPACE
 {
 static inline ImNodesEditorContext& EditorContextGet()
 {
     // No editor context was set! Did you forget to call ImNodes::CreateContext()?
-    assert(GImNodes->EditorCtx != NULL);
+    IM_ASSERT(GImNodes->EditorCtx != NULL);
     return *GImNodes->EditorCtx;
 }
 
 // [SECTION] ObjectPool implementation
 
 template<typename T>
-static inline int ObjectPoolFind(ImObjectPool<T>& objects, const int id)
+static inline int ObjectPoolFind(const ImObjectPool<T>& objects, const int id)
 {
     const int index = objects.IdMap.GetInt(static_cast<ImGuiID>(id), -1);
     return index;
@@ -381,7 +404,7 @@ inline void ObjectPoolUpdate(ImObjectPool<ImNodeData>& nodes)
             {
                 // Remove node idx form depth stack the first time we detect that this idx slot is
                 // unused
-                ImVector<int>& depth_stack = EditorContextGet().NodeDepthOrder;
+                ImVector<int>&   depth_stack = EditorContextGet().NodeDepthOrder;
                 const int* const elem = depth_stack.find(i);
                 IM_ASSERT(elem != depth_stack.end());
                 depth_stack.erase(elem);
@@ -474,4 +497,4 @@ static inline T& ObjectPoolFindOrCreateObject(ImObjectPool<T>& objects, const in
     const int index = ObjectPoolFindOrCreateIndex(objects, id);
     return objects.Pool[index];
 }
-} // namespace ImNodes
+} // namespace IMNODES_NAMESPACE
